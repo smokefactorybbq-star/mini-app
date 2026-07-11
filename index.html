@@ -1,1 +1,1253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smoke Factory BBQ — Меню</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <style>
+    :root{--accent:#16a34a;--danger:#dc2626;--bg:#ffffff;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--card:#f8fafc;--mobile-bar-h:84px}
+    *{box-sizing:border-box}
+    html,body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+
+    /* header */
+    .header-sticky{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border)}
+    .header-inner{max-width:1280px;margin:0 auto;padding:12px 16px;display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:center}
+    .logo-wrap{display:flex;align-items:center;gap:12px;cursor:pointer}
+    .logo-img{height:120px;width:auto;border-radius:10px}
+    .hero-text{font-weight:800;line-height:1.3}
+    .lang-toggle{margin-top:8px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit}
+    @media(max-width:768px){.header-inner{grid-template-columns:1fr 2fr;padding:10px 12px}.logo-img{height:100px}.hero-text{font-size:15px}}
+
+    /* categories strip */
+    .cat-strip-wrap{position:sticky;top:0;z-index:45;background:#fff;border-bottom:1px solid var(--border)}
+    .cat-strip{max-width:1280px;margin:0 auto;padding:8px 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+    .cat-btn{
+      position:relative; border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer;
+      padding:0; height:86px; display:block; background:#000; isolation:isolate;
+    }
+    .cat-btn .cat-img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.9; transition:transform .25s ease, opacity .2s ease}
+    .cat-btn::after{
+      content:""; position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.0) 0%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.6) 100%);
+      z-index:1;
+    }
+    .cat-btn .cat-name{
+      position:absolute; inset:auto 10px 10px 10px; z-index:2; color:#fff; font-weight:800; text-align:center;
+      left:50%; transform:translateX(-50%); width:calc(100% - 20px);
+      text-shadow:0 2px 6px rgba(0,0,0,.5); font-size:14px; line-height:1.2;
+    }
+    .cat-btn:hover .cat-img{transform:scale(1.04); opacity:1}
+
+    /* welcome (под категориями) */
+    .welcome-section{max-width:1280px;margin:0 auto;padding:16px 12px;text-align:center;font-size:18px;line-height:1.6}
+
+    /* layout */
+    .page-layout{max-width:1280px;margin:0 auto;padding:16px;display:grid;grid-template-columns:2fr 1fr;gap:24px}
+    @media(max-width:1024px){.page-layout{grid-template-columns:1fr}}
+
+    /* menu cards */
+    .menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    @media(max-width:1200px){.menu-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.menu-grid{grid-template-columns:1fr}}
+    .menu-card{background:var(--card);border:none;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+    .menu-card img{width:100%;height:200px;object-fit:cover;transition:transform .3s ease;display:block}
+    .menu-card:hover img{transform:scale(1.05)}
+    .card-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+    .card-title{font-weight:700}
+    .card-desc{color:var(--muted);font-size:14px;flex:1}
+    .card-price{font-size:18px;font-weight:700;color:#d97706}
+    .add-btn{padding:6px 12px;font-size:12px;background:#d97706;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:500;transition:all .2s}
+    .add-btn:hover{background:#b45309;transform:translateY(-1px)}
+    .card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+    .cat-title{margin:24px 0 8px;font-size:22px;border-left:4px solid var(--accent);padding-left:8px}
+
+    /* cart */
+    .cart-container{position:sticky;top:140px;border:1px solid var(--border);border-radius:22px;background:#fff;padding:0;overflow:hidden;height:fit-content}
+    @media(max-width:768px){.cart-container{top:8px}}
+    .cart-header{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:#f9fafb}
+    .cart-pill{margin-left:auto;border:1px dashed var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+    .cart-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+    .address-link{color:#2563eb;cursor:pointer;text-decoration:underline}
+    .summary-text{font-size:14px;color:var(--muted)}
+    .cart-item{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;border-bottom:1px dashed var(--border);padding:10px 0}
+    .qty-controls{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+    .qty-btn{border:none;background:#fff;width:28px;height:28px;cursor:pointer}
+    .qty-display{padding:0 10px}
+    .totals-section{margin-top:8px;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+    .checkout-btn{margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:12px;font-weight:800;cursor:pointer;width:100%}
+    .checkout-btn:disabled{background:#d1d5db;color:#6b7280;cursor:not-allowed}
+    .remove-btn{background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px}
+
+    /* inputs */
+    .input{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px}
+    .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:640px){.input-row{grid-template-columns:1fr}}
+    .muted{color:var(--muted)}
+    .pay-group{display:flex;gap:10px;flex-wrap:wrap}
+    .pay-group label{font-weight:400}
+
+    .phone-wrap{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .phone-prefix{display:flex;align-items:center;padding:0 10px;background:#f1f5f9;border-right:1px solid var(--border)}
+    .phone-input{border:none;flex:1;padding:12px}
+    .phone-input:focus{outline:none}
+
+    /* modals */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+    .modal-backdrop.active{display:flex}
+    .modal-content{width:min(680px,92vw);background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.2);overflow:hidden;max-height:92vh;display:flex;flex-direction:column}
+    .modal-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-body{padding:16px;display:flex;flex-direction:column;gap:12px;overflow:auto;-webkit-overflow-scrolling:touch}
+    .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+    .btn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer}
+    .btn-primary{background:var(--accent);color:#fff;border:none}
+    .btn:disabled{background:#e5e7eb;color:#9ca3af;border-color:#e5e7eb;cursor:not-allowed}
+
+    /* map */
+    .map-tools{display:flex;gap:8px;flex-wrap:wrap}
+    .map-wrap{display:none;padding:12px;border-top:1px dashed var(--border)}
+    .map-head{margin-bottom:8px}
+    .map-box-wrap{position:relative}
+    .map-box{height:300px;border:1px solid var(--border);border-radius:12px}
+    .map-close{position:absolute; left:8px; top:8px;width:36px; height:36px; border-radius:999px;background:#fff; border:1px solid var(--border);display:grid; place-items:center; font-size:20px; line-height:1; cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1); z-index:500}
+    .map-close:hover{ background:#f9fafb }
+
+    /* mobile bottom bar */
+    @media(max-width:768px){
+      .mobile-progress{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(env(safe-area-inset-bottom,0)+10px);background:rgba(255,255,255,0.98);border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;z-index:60;backdrop-filter:saturate(180%) blur(8px);height:var(--mobile-bar-h)}
+      .mobile-cart-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;flex:0 0 44px;cursor:pointer}
+      .mobile-range-wrap{flex:1;display:flex;align-items:center;gap:10px}
+      .mobile-range{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:999px;background:#e5e7eb;outline:none;overflow:hidden}
+      .mobile-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:6px;background:#16a34a;border:2px solid #fff;box-shadow:0 0 0 2px #16a34a}
+      .mobile-range::-moz-range-thumb{width:24px;height:24px;border-radius:6px;background:#16a34a;border:2px solid #fff}
+      .mobile-range::-webkit-slider-runnable-track{height:8px;background:linear-gradient(90deg,#16a34a 0,#16a34a var(--_p,0%),#e5e7eb var(--_p,0%))}
+      .mobile-labels{font-size:12px;color:#6b7280;display:flex;justify-content:flex-end}
+      .mobile-labels b{color:#111;font-size:13px}
+      main.page-layout{padding-bottom:calc(var(--mobile-bar-h) + env(safe-area-inset-bottom,0) + 12px)}
+    }
+    @media(min-width:769px){.mobile-progress{display:none}}
+
+    /* ====== выбор размера (Standart / XXL) ====== */
+    .size-row{display:flex;align-items:center;gap:8px;margin-top:-4px}
+    .size-dot{width:20px;height:20px;border-radius:50%;border:2px solid #ff7a00;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s ease}
+    .size-dot.active{background:#ff7a00}
+    .size-label{font-size:13px;margin-right:8px}
+
+    /* === Mobile Home Button === */
+    .mobile-home{display:none}
+    @media(max-width:768px){
+      .mobile-home{display:block;position:fixed;top:50px;right:10px;z-index:70}
+      .mobile-home-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer}
+      .mobile-home-btn svg{display:block}
+    }
+  </style>
+</head>
+
+<body>
+  <div id="top"></div>
+
+  <!-- Header -->
+  <header class="header-sticky">
+    <div class="header-inner">
+      <div class="logo-wrap" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <img class="logo-img" src="/images/logo.jpg" alt="Smoke Factory BBQ logo">
+      </div>
+      <div>
+        <div class="hero-text" id="hero-text">Delivery 10.00 to 22.00 MON-SAT</div>
+        <button class="lang-toggle" id="lang-toggle" aria-label="Switch language">🇷🇺 RU</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Categories strip -->
+  <div class="cat-strip-wrap">
+    <nav class="cat-strip" id="cat-strip" aria-label="Категории"></nav>
+  </div>
+
+  <!-- Welcome -->
+  <div class="welcome-section" id="welcome-text">
+    Welcome to Smoke factory BBQ. We are ready to surprise you with classic Russian cuisine dishes, as well as dishes from American smoker.
+  </div>
+
+  <main class="page-layout">
+    <!-- MENU -->
+    <section id="menu-root"></section>
+
+    <!-- CART -->
+    <aside id="cart" class="cart-container" aria-live="polite">
+      <div class="cart-header">
+        <strong id="my-order-label">My order</strong>
+        <span class="cart-pill" id="delivery-pill">📦 Delivery</span>
+      </div>
+      <div class="cart-body">
+        <div id="cart-items"></div>
+
+        <label class="summary-text" id="district-label">Район доставки</label>
+        <select class="input" id="district-select">
+          <option value="50">Central Phuket, Kathu — 50 ฿</option>
+          <option value="0">Base up town — 0 ฿</option>
+          <option value="150">Kata, Karon, — 150 ฿</option>
+          <option value="150">Rawai — 150 ฿</option>
+          <option value="200">Bang Tao — 200 ฿</option>
+          <option value="200">Surin — 200 ฿</option>
+          <option value="100">Chalong — 100 ฿</option>
+          <option value="100">Patong — 100 ฿</option>
+          <option value="150">Kamala — 150 ฿</option>
+        </select>
+
+        <div><span class="address-link" id="open-address">Specify address</span></div>
+        <div class="summary-text" id="addr-summary" style="display:none"></div>
+
+        <div class="totals-section">
+          <div class="summary-text" id="delivery-cost-row">
+            Delivery cost: <span id="delivery-fee">0</span> ฿
+          </div>
+
+          <div class="summary-text" id="dishes-total-row">
+            Dishes total: <span id="items-total">0</span> ฿
+          </div>
+
+          <div class="summary-text" id="discount-row" style="display:none;">
+            Discount: −<span id="discount-amount">0</span> ฿
+          </div>
+
+          <div class="summary-text">
+            <strong id="grand-total-row">
+              Total to pay: <span id="grand-total">0</span> ฿
+            </strong>
+          </div>
+        </div>
+
+        <label class="summary-text" id="pay-label" style="margin-top:6px;">Способ оплаты</label>
+        <div class="pay-group" id="pay-group">
+          <label><input type="radio" name="payment" value="Thai bank" checked> Thai bank</label>
+          <label><input type="radio" name="payment" value="True money"> True money</label>
+          <label><input type="radio" name="payment" value="Банк РФ"> Банк РФ</label>
+        </div>
+
+        <button class="checkout-btn" id="checkout-btn" disabled>Place order</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Mobile bottom bar -->
+  <div class="mobile-progress" id="mobile-progress">
+    <button class="mobile-cart-btn" id="jump-cart" aria-label="My Order">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6h15l-1.5 9H7.5L6 6Z" stroke="#111" stroke-width="1.6"></path>
+        <path d="M9 6a3 3 0 1 1 6 0" stroke="#111" stroke-width="1.6"></path>
+        <circle cx="9" cy="20" r="1.6" fill="#111"></circle>
+        <circle cx="18" cy="20" r="1.6" fill="#111"></circle>
+      </svg>
+    </button>
+    <div class="mobile-range-wrap">
+      <input class="mobile-range" id="mobile-range" type="range" min="0" max="5000" step="1" value="0" readonly />
+      <div class="mobile-labels"><b id="mobile-total">0</b></div>
+    </div>
+  </div>
+
+  <!-- Mobile Home Button -->
+  <div class="mobile-home">
+    <button class="mobile-home-btn" id="mobile-home" aria-label="Вверх (домой)">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-10.5Z" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Address Modal -->
+  <div class="modal-backdrop" id="address-modal">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addr-title">
+      <div class="modal-header">
+        <strong id="addr-title">Delivery Address</strong>
+        <button class="btn" id="addr-close">Close</button>
+      </div>
+      <div class="modal-body">
+        <input class="input" id="addr-input" placeholder="Delivery address" />
+        <div class="input-row">
+          <input class="input" id="name-input" placeholder="Name" />
+          <div class="phone-wrap">
+            <div class="phone-prefix">+66</div>
+            <input class="phone-input" id="phone-input" inputmode="numeric" maxlength="10" placeholder="Phone number (10 digits)" />
+          </div>
+        </div>
+
+        <div class="map-tools">
+          <button class="btn" id="map-toggle">Выбрать на карте</button>
+          <button class="btn" id="geo-btn">Моё местоположение</button>
+        </div>
+        <div class="map-wrap" id="map-wrap">
+          <div class="map-head">
+            <input class="input" id="map-search" placeholder="Поиск на карте (адрес/место)" />
+          </div>
+          <div class="map-box-wrap">
+            <button class="map-close" id="map-close" aria-label="Скрыть карту" title="Скрыть карту">×</button>
+            <div class="map-box" id="map"></div>
+          </div>
+        </div>
+
+        <div class="muted" id="addr-note">The «Confirm» button will become active after entering address and phone.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="addr-cancel">Cancel</button>
+        <button class="btn btn-primary" id="addr-confirm" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Time & Comment Modal -->
+  <div class="modal-backdrop" id="time-modal">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="time-title">
+      <div class="modal-header">
+        <strong id="time-title">Delivery Time</strong>
+        <button class="btn" id="time-close">Close</button>
+      </div>
+      <div class="modal-body">
+        <label style="display:flex;align-items:center;gap:8px;">
+          <input type="radio" name="ordertime" value="asap" checked /> <span id="soonest-label">Soonest</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;">
+          <input type="radio" name="ordertime" value="scheduled" /> <span id="selecttime-label">Select time</span>
+        </label>
+        <div class="input-row" id="time-pickers" style="display:none;">
+          <select class="input" id="hour-select"></select>
+          <select class="input" id="minute-select">
+            <option>00</option><option>15</option><option>30</option><option>45</option>
+          </select>
+        </div>
+        <div>
+          <label class="summary-text" style="display:block;margin-bottom:6px;" id="comment-label">Order Comment</label>
+          <textarea class="input" id="comment-input" rows="3" placeholder="e.g., no onions, call on arrival…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="time-cancel">Cancel</button>
+        <button class="btn btn-primary" id="time-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closed Hours Modal -->
+  <div class="modal-backdrop" id="closed-modal">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="closed-title">
+      <div class="modal-header">
+        <strong id="closed-title">Мы закрыты</strong>
+        <button class="btn" id="closed-x">×</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size:40px; line-height:1; margin-top:4px; margin-bottom:8px;">🙏</div>
+        <div style="font-size:16px;">
+          Извините, в данный момент мы закрыты.<br/>
+          Наши часы работы: <b>10:00–22:00 ПН–СБ</b>.<br/>
+          Ваш заказ отправлен менеджеру, он свяжется с вами<br/>
+          для подтверждения заказа в рабочее время.<br/><br/>
+          Спасибо, что выбрали нас!
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:center;">
+        <button class="btn btn-primary" id="closed-ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Безопасная инициализация Telegram WebApp
+    try {
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        try { Telegram.WebApp.MainButton.hide(); } catch(e){}
+      }
+    } catch (e) {
+      console.warn("Telegram WebApp not available, running in browser mode");
+    }
+
+    /* ==== Categories ==== */
+    const CATEGORIES = {
+      "Супы": [
+        {name: "Борщ", img: "/images/borsht3.jpeg", price: 170, desc: "Традиционный наваристый борщ. Подается со сметаной, салом и русской горчицей. 300 грамм"},
+        {name: "Солянка", img: "/images/Solyanka1.jpeg", price: 170, desc: "Сборная солянка с копченостями. Подается со сметаной и лимоном. 300 грамм"},
+        {name: "Гороховый суп", img: "/images/goroh soup1.jpeg", price: 170, desc: "Гороховый суп на копченых ребрах с сухариками. 300 грамм"},
+        {name: "Куриный суп", img: "/images/soupkyr.jpeg", price: 120, desc: "Куриный бульон с яичной лапшой и отварным яйцом. 350 грамм"},
+      ],
+      "Основные блюда": [
+        { name: "Котлеты куриные", img: "/images/kyrinie kotlety1.jpeg", price: 150, desc: "Котлеты из мякоти бедра. Подаются с картофельным пюре. 300 грамм" },
+        { name: "Вареники с картошкой и беконом", img: "/images/vareniki1.jpeg", price: 160, desc: "Вареники ручной лепки с копченым беконом и нежным картофельным пюре. Подаются со сметаной и зеленью. 300 грамм" },
+        { name: "Пельмени", img: "/images/pelmeni1.jpeg", price: 180, desc: "Пельмени ручной лепки с фаршем из свинины и говядины. Подаются со сметаной. 300 грамм" },
+        { name: "Котлеты из домашнего фарша", img: "/images/kotletyi iz farsha1.jpeg", price: 160, desc: "Сочные и ароматные котлеты, тушеные до насыщенного вкуса.Подаются с картофельным пюре. 350 грамм" },
+        { name: "Перец фаршированный", img: "/images/farshperci.jpeg", price: 180, desc: " Мини перцы с домашним фаршем, томленые с овощами. Подаеются со сметаной.400 грамм" },
+        { name: "Бефстроганов", img: "/images/befstroganof.jpeg", price: 190, desc: "Нежная говядина в сливочном соусе с грибами. Подается с картофельным пюре. 320 грамм" },
+        { name: "Лепешка с сыром", img: "/images/lepeshka s sirom1.jpeg", price: 100, desc: "Румяная дрожжевая лепешка с расплавленным сыром в мягком тесте, обжаренная до хрустящей корочки. 100 грамм" },
+        { name: "Лепешка с картошкой", img: "/images/lepeshka s sirom1.jpeg", price: 100, desc: "Румяная дрожжевая лепешка с начинкой из пышного картофельного пюре и ароматной зелени. Мягкая, сытная, с хрустящей корочкой. 100 грамм" },
+        { name: "Лепешка с рваной свининой", img: "/images/lepeshka s sirom1.jpeg", price: 140, desc: "Румяная дрожжевая лепешка с начинкой из рваной свинины приготовленной в смокере в течении 9 часов, сыра моцареллы, красного соуса, киндзы и вяленых томатов. 150 грамм" },
+        { name: "Котлета по-киевски", img: "/images/kotleta po kievski.jpeg", price: 190, desc: "Сочное куриное филе в хрустящей панировке со сливочным маслом и ароматной зеленью. Подается с картофельными дольками. 310 грамм" },
+        
+        { name: "Зраза", img: "/images/zraza.jpeg", price: 190, desc: "Картофельная зраза с мясной начинкой. Подается с соленым огурцом, маринованным луком и сметаной. 210 грамм" },
+        { name: "Драники", img: "/images/draniki.jpeg", price: 200, desc: "Подаются с малосоленым лососем, зеленью и сметаной. 200 грамм" },
+        { name: "Ленивые голубцы Том ям", img: "/images/golubtomyam.jpeg", price: 250, desc: "Ленивые голубцы из креветки и кальмара с пекинской капустой, дополненные пикантным соусом Том ям. Подаются с отварным рисом" },
+        { name: "Картошка фри", img: "/images/kart fri.jpeg", price: 100, desc: "Подается с кетчупом. 150 грамм" },
+        { name: "Картошка дольками", img: "/images/kart dolki.jpeg", price: 100, desc: "Подается с кетчупом. 150 грамм" },
+        { name: "Мини чебуреки", img: "/images/min chebureki.jpeg", price: 160, desc: "Хрустящие мини чебуреки с мясной начинкой. Подаются с аджикой. 180 грамм" },
+      ],
+      "Салаты": [
+        { name: "Салат Цезарь с копченой курицей", img: "/images/salat cezar.jpeg", price: 170, desc: "Свежие листья салата, черри, хрустящие сухарики и классический соус Цезарь.Основа блюда - фирменная копченая грудка и пармезан. 200 грамм" },
+        { name: "Салат Обжорка", img: "/images/objorka.jpeg", price: 180, desc: "Нежная отварная говядина, пассерованная морковь и лук, соленые огурцы, под майонезной заправкой. Классика дальнего востока. 230 грамм" },
+        { name: "Салат баклажаны в кляре", img: "/images/salat baklajani.jpeg", price: 160, desc: "Обжаренные во фритюре ломтики баклажанов в хрустящей крахмальной корочке,с томатами черри, зеленью и пикатным соусом свит-чилли. 160 грамм" },
+        { name: "Салат Деревенский", img: "/images/derev.jpeg", price: 170, desc: "Копченый бекон обжаренный до хрустящей корочочки с молодым картофелем. Свежие огурцы, яйцо, томаты черри и хрустящие листья салата. 250 грамм" },
+        { name: "Салат Столичный", img: "/images/stolich.jpeg", price: 150, desc: "Копченая куриная грудка, отварное яйцо, отварной картофель, соленый огурец, консервированный горошек под майонезной заправкой. 230 грамм" },
+      ],
+      "Гриль": [
+        { name: "Ребра BBQ", img: "/images/Rebra BBQ1.jpeg", price: 350, desc: "Ребра барбекю, приготовленные методом low and slow, глазированные фирменным соусом.320 грамм" },
+        { name: "Кебаб свинина-говядина", img: "/images/kebab pork-beef1.jpeg", price: 230, desc: "Сочный кебаб, приправленный специями и приготовленный в смокере. Подается с маринованным луком, свежими овощами и аджикой. 250 грамм" },
+        { name: "Кебаб из курицы", img: "/images/kebab chicken1.jpeg", price: 180, desc: "Нежная курица с пряными специями. Сочное мясо с ярким вкусом, которое тает во рту. Подается с маринованным луком, свежими овощами и аджикой. 250 грамм" },
+        { name: "Шашлык из курицы", img: "/images/shashlik iz kyrica.jpeg", price: 170, desc: "Сочное мясо куриного бедра, маринованное в специях.Подается с маринованным луком, свежими овощами и аджикой. 200 грамм" },
+        { name: "Шашлык из свинины", img: "/images/shashlik iz svinini1.jpeg", price: 200, desc: "Сочный шашлык с дымком - нежные кусочки свинины, маринованные в авторском маринаде. Подается с маринованным луком, свежими овощами и аджикой.260 грамм" },
+      ],
+      "Заморозка": [
+      ],
+      "Копчение": [
+        { name: "Ребро варено-копченое", img: "/images/rebrokop.jpeg", price: 250, desc: "Идеально к пиву. 300 грамм" },
+      ],
+    };
+
+    /* ==== i18n ==== */
+    let language = "ru";
+    const translations = {
+      ru:{
+        delivery:"Доставка с 10.00 до 22.00 ПН-СБ",
+        welcome:"Добро пожаловать в Smoke factory BBQ. Мы готовы удивить вас классическими блюдами Русской кухни, а также блюдами из Американского смокера.",
+        addToCart:"Добавить в корзину", myOrder:"Мой заказ", specifyAddress:"Указать адрес",
+        address:"Адрес", name:"Имя", phone:"Телефон",
+        deliveryCost:"Стоимость доставки", dishesTotal:"Сумма блюд", totalToPay:"Итого к оплате",
+        placeOrder:"Оформить заказ", remove:"удалить",
+        districtLabel:"Район доставки", payLabel:"Способ оплаты",
+        categories:{ "Супы":"Супы","Основные блюда":"Основные блюда","Салаты":"Салаты","Гриль":"Гриль","Заморозка":"Заморозка","Копчение":"Копчение" },
+        addrModal:{title:"Адрес доставки",close:"Закрыть",addrPh:"Адрес доставки",namePh:"Имя",phonePh:"Номер телефона (10 цифр)",note:"Кнопка «Подтвердить» станет активной после ввода адреса и телефона.",cancel:"Отмена",confirm:"Подтвердить",mapBtn:"Выбрать на карте",geoBtn:"Моё местоположение",searchPh:"Поиск на карте (адрес/место)",hideMap:"Скрыть карту"},
+        soonest:"Ближайшее", selectTime:"Выбрать время",
+        comment:"Комментарий к заказу", commentPh:"Например: без лука, позвонить при прибытии…",
+        thanks:"Спасибо! Заказ отправлен.", error:"Не удалось отправить заказ. Проверьте соединение.",
+        deliveryPill:"Доставка",
+        timeModal:{title:"Время и комментарий",close:"Закрыть",cancel:"Отмена",confirm:"Подтвердить"}
+      },
+      en:{
+        delivery:"Delivery 10.00 to 22.00 MON-SAT",
+        welcome:"Welcome to Smoke factory BBQ. We are ready to surprise you with classic Russian cuisine dishes, as well as dishes from American smoker.",
+        addToCart:"Add to cart", myOrder:"My order", specifyAddress:"Specify address",
+        address:"Address", name:"Name", phone:"Phone",
+        deliveryCost:"Delivery cost", dishesTotal:"Dishes total", totalToPay:"Total to pay",
+        placeOrder:"Place order", remove:"remove",
+        districtLabel:"Delivery district", payLabel:"Payment method",
+        categories:{ "Супы":"Soups","Основные блюда":"Main dishes","Салаты":"Salads","Гриль":"Grill","Заморозка":"Frozen","Копчение":"Smoked" },
+        addrModal:{title:"Delivery Address",close:"Close",addrPh:"Delivery address",namePh:"Name",phonePh:"Phone number (10 digits)",note:"The «Confirm» button will become active after entering address and phone.",cancel:"Cancel",confirm:"Confirm",mapBtn:"Pick on map",geoBtn:"Use my location",searchPh:"Search on map (address/place)",hideMap:"Hide map"},
+        soonest:"Soonest", selectTime:"Select time",
+        comment:"Order Comment", commentPh:"e.g., no onions, call on arrival…",
+        thanks:"Thank you! Order sent.", error:"Failed to send order. Check connection.",
+        deliveryPill:"Delivery",
+        timeModal:{title:"Time & Comment",close:"Close",cancel:"Cancel",confirm:"Confirm"}
+      }
+    };
+
+    /* Переводы блюд */
+    const dishTranslations = {
+      en: {
+        names: {
+          "Борщ": "Borscht","Солянка": "Solyanka","Гороховый суп": "Pea Soup","Куриный суп": "Chicken Soup",
+          "Котлеты куриные": "Chicken Cutlets","Вареники с картошкой и беконом": "Vareniki with Potatoes & Bacon","Пельмени": "Pelmeni",
+          "Котлеты из домашнего фарша": "Homemade Meat Patties","Перец фаршированный": "Stuffed Pepper","Бефстроганов": "Beef Stroganoff",
+          "Лепешка с сыром": "Cheese Flatbread","Лепешка с картошкой": "Potato Flatbread","Лепешка с мясом": "Meat Flatbread","Лепешка с рваной свининой": "Pulled Pork Flatbread",
+          "Котлета по-киевски": "Chicken Kiev",
+"Зраза": "Potato Zraza with Meat Filling","Драники": "Potato Pancakes (Draniki)",
+          "Картошка фри": "French Fries","Картошка дольками": "Potato Wedges","Мини чебуреки": "Mini Chebureki",
+          "Салат Цезарь с копченой курицей": "Caesar Salad with Smoked Chicken","Салат Обжорка": "Obzhorka Salad","Салат баклажаны в кляре": "Crispy Eggplant Salad",
+          "Салат Деревенский": "Country-Style Salad","Салат Столичный": "Stolichny Salad",
+          "Ребра BBQ": "BBQ Ribs","Кебаб свинина-говядина": "Pork & Beef Kebab","Кебаб из курицы": "Chicken Kebab","Шашлык из курицы": "Chicken Shashlik","Шашлык из свинины": "Pork Shashlik",
+          "Копченая шейка": "Smoked Pork Collar","Колбаса краковская": "Krakow Sausage",
+          "Копченая корейка": "Smoked Pork Loin","Ребро варено-копченое": "Boiled-Smoked Rib"
+        },
+        descByName: {
+          "Борщ": "Hearty traditional borscht. Served with sour cream, cured pork fat, and Russian mustard. 300 g",
+          "Солянка": "Mixed solyanka with smoked meats. Served with sour cream and lemon. 300 g",
+          "Гороховый суп": "Pea soup cooked on smoked ribs with croutons. 300 g",
+          "Куриный суп": "Chicken broth with egg noodles and a boiled egg. 350 g",
+          "Котлеты куриные": "Thigh-meat chicken patties. Served with mashed potatoes. 300 g",
+          "Вареники с картошкой и беконом": "Hand-made vareniki with smoked bacon and tender mashed potatoes. Served with sour cream and herbs. 300 g",
+          "Пельмени": "Hand-made pelmeni with pork & beef mince. Served with sour cream. 300 g",
+          "Котлеты из домашнего фарша": "Juicy aromatic patties braised to rich flavor. Served with mashed potatoes. 350 g",
+          "Перец фаршированный": "Bell pepper with homemade mince, stewed with vegetables. Served with sour cream. 400 g",
+          "Бефстроганов": "Tender beef in creamy mushroom sauce. Served with mashed potatoes. 320 g",
+          "Лепешка с сыром": "Yeasted flatbread with melted cheese, fried to a crispy crust. 100 g",
+          "Лепешка с картошкой": "Yeasted flatbread with fluffy mashed potatoes and herbs. Soft, filling, with a crispy crust. 100 g",
+          "Лепешка с мясом": "Yeasted flatbread with a juicy meat filling. 100 g",
+          "Лепешка с рваной свининой": "Yeasted flatbread filled with pulled pork smoked for 9 hours, mozzarella, red sauce, cilantro, and sun-dried tomatoes. 150 g",
+          "Котлета по-киевски": "Juicy chicken fillet in crispy breading with butter & herbs inside. Served with potato wedges. 310 g",
+
+          "Зраза": "Potato zraza with meat filling. Served with a pickled cucumber, marinated onion, and sour cream. 210 g",
+          "Драники": "Potato pancakes served with lightly salted salmon, herbs, and sour cream. 200 g",
+          "Картошка фри": "Served with ketchup. 150 g",
+          "Картошка дольками": "Served with ketchup. 150 g",
+          "Мини чебуреки": "Crispy mini chebureki with meat filling. Served with adjika. 180 g",
+          "Салат Цезарь с копченой курицей": "Lettuce, cherry tomatoes, croutons, classic Caesar dressing + smoked chicken breast & Parmesan. 200 g",
+          "Салат Обжорка": "Tender boiled beef, sautéed carrots and onion, pickles, and a mayo dressing. Classic Far East style. 230 g",
+          "Салат баклажаны в кляре": "Deep-fried eggplant in a crispy starch batter with cherry tomatoes, herbs, and sweet chili sauce. 160 g",
+          "Салат Деревенский": "Smoked bacon fried until crispy with baby potatoes, fresh cucumbers, egg, cherry tomatoes, and crunchy lettuce. 250 g",
+          "Салат Столичный": "Smoked chicken breast, boiled egg, potatoes, pickles, green peas, and a mayo dressing. 230 g",
+          "Ребра BBQ": "Low & slow BBQ ribs glazed with signature sauce. 320 g",
+          "Кебаб свинина-говядина": "Juicy pork & beef kebab with spices, cooked in the smoker. Served with pickled onion, fresh veggies, and adjika. 250 g",
+          "Кебаб из курицы": "Tender spiced chicken that melts in your mouth. Served with pickled onion, fresh veggies, and adjika. 250 g",
+          "Шашлык из курицы": "Marinated chicken thigh. Served with pickled onion, fresh veggies, and adjika. 200 g",
+          "Шашлык из свинины": "Juicy smoky pork skewers in a signature marinade. Served with pickled onion, fresh veggies, and adjika. 260 g",
+          "Копченая шейка": "100 g","Колбаса краковская": "200 g",
+          "Копченая корейка": "100 g","Ребро варено-копченое": "Perfect with beer. 300 g"
+        }
+      }
+    };
+
+    const getDishName = ru => language==="en" ? (dishTranslations.en.names[ru] || ru) : ru;
+    const getDishDesc = (ru, desc) => language==="en" ? (dishTranslations.en.descByName[ru] || desc) : desc;
+
+    /* ==== STATE ==== */
+    const STORAGE = { district:'sfb_district', lang:'sfb_lang' };
+    const cart = {};
+    const customer = { address:"", name:"", phone:"", location:null };
+    const orderState = { when:"asap", hour:"10", minute:"00", comment:"" };
+    let deliveryFee = 0;
+
+    let payloadPendingForClose = null;
+
+    /* SIZE VARIANTS */
+    const SIZE_VARIANTS = {
+      "Лепешка с мясом":      { Standart: 100, XXL: 180 },
+      "Лепешка с сыром":      { Standart:  100, XXL: 200 },
+      "Лепешка с картошкой":  { Standart:  100, XXL: 200 },
+      "Лепешка с рваной свининой":  { Standart:  140, XXL: 250 },
+    };
+
+    function saveState(){
+      try{
+        const districtSelect = document.getElementById('district-select');
+        if (districtSelect) localStorage.setItem(STORAGE.district, districtSelect.value||"");
+        localStorage.setItem(STORAGE.lang, language);
+      }catch(_){}
+    }
+    function loadState(){
+      const d = localStorage.getItem(STORAGE.district);
+      const districtSelect = document.getElementById('district-select');
+      if(d && districtSelect) districtSelect.value=d;
+      const l = localStorage.getItem(STORAGE.lang); if(l) language=l;
+    }
+
+    /* ==== DOM refs ==== */
+    const heroText=document.getElementById('hero-text');
+    const langToggle=document.getElementById('lang-toggle');
+    const welcomeText=document.getElementById('welcome-text');
+    const catStrip=document.getElementById('cat-strip');
+    const menuRoot=document.getElementById('menu-root');
+    const myOrderLabel=document.getElementById('my-order-label');
+    const deliveryPill=document.getElementById('delivery-pill');
+    const openAddrBtn=document.getElementById('open-address');
+    const addrSummary=document.getElementById('addr-summary');
+    const itemsTotalEl=document.getElementById('items-total');
+    const deliveryFeeEl=document.getElementById('delivery-fee');
+    const grandTotalEl=document.getElementById('grand-total');
+    const deliveryCostRow=document.getElementById('delivery-cost-row');
+    const dishesTotalRow=document.getElementById('dishes-total-row');
+    const grandTotalRow=document.getElementById('grand-total-row');
+    const discountRow = document.getElementById('discount-row');
+    const discountAmountEl = document.getElementById('discount-amount');
+
+    const checkoutBtn=document.getElementById('checkout-btn');
+    const districtLabel=document.getElementById('district-label');
+    const districtSelect=document.getElementById('district-select');
+    const payLabel=document.getElementById('pay-label');
+    const mobileRange=document.getElementById('mobile-range');
+    const mobileTotal=document.getElementById('mobile-total');
+    const mobileHome=document.getElementById('mobile-home');
+
+    // Address modal
+    const addrModal=document.getElementById('address-modal');
+    const addrClose=document.getElementById('addr-close');
+    const addrCancel=document.getElementById('addr-cancel');
+    const addrConfirm=document.getElementById('addr-confirm');
+    const addrInput=document.getElementById('addr-input');
+    const nameInput=document.getElementById('name-input');
+    const phoneInput=document.getElementById('phone-input');
+    const addrTitle=document.getElementById('addr-title');
+    const addrNote=document.getElementById('addr-note');
+    const mapToggle=document.getElementById('map-toggle');
+    const geoBtn=document.getElementById('geo-btn');
+    const mapWrap=document.getElementById('map-wrap');
+    const mapBox=document.getElementById('map');
+    const mapSearch=document.getElementById('map-search');
+    const mapClose=document.getElementById('map-close');
+
+    // Time modal
+    const timeModal=document.getElementById('time-modal');
+    const timeClose=document.getElementById('time-close');
+    const timeCancel=document.getElementById('time-cancel');
+    const timeConfirm=document.getElementById('time-confirm');
+    const timeTitle=document.getElementById('time-title');
+    const soonestLabel=document.getElementById('soonest-label');
+    const selecttimeLabel=document.getElementById('selecttime-label');
+    const timePickers=document.getElementById('time-pickers');
+    const hourSelect=document.getElementById('hour-select');
+    const minuteSelect=document.getElementById('minute-select');
+    const commentLabel=document.getElementById('comment-label');
+    const commentInput=document.getElementById('comment-input');
+
+    // Closed-hours modal
+    const closedModal = document.getElementById('closed-modal');
+    const closedOk    = document.getElementById('closed-ok');
+    const closedX     = document.getElementById('closed-x');
+
+    function openClosedModal(){ closedModal.classList.add('active'); }
+    function closeClosedModal(){ closedModal.classList.remove('active'); }
+    closedOk.onclick = () => {
+      closeClosedModal();
+      if (payloadPendingForClose) {
+        try {
+          if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.sendData(JSON.stringify(payloadPendingForClose));
+          }
+          alert(translations[language].thanks);
+          if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.close();
+          }
+        }
+        catch(e) {
+          console.error("sendData error:", e);
+          alert(translations[language].error);
+        }
+        payloadPendingForClose = null;
+      }
+    };
+    closedX.onclick  = closeClosedModal;
+    closedModal.addEventListener('click', e=>{ if(e.target===closedModal) closeClosedModal(); });
+
+    /* ==== helpers ==== */
+    const slug = s => s.toLowerCase().replace(/\s+/g,'-');
+    const validPhone = p => /^\+66\d{9,10}$/.test(p);
+    const canCheckout = ()=>{
+      const hasItems = Object.keys(cart).length>0;
+      const hasContact = customer.address && validPhone(customer.phone);
+      const timeOk = (orderState.when==='asap') || (orderState.hour && orderState.minute);
+      return hasItems && hasContact && timeOk;
+    };
+    const itemsTotal = ()=> Object.values(cart).reduce((s,i)=> s + i.qty*i.price, 0);
+
+    function updateDeliveryFee(){
+      const fee = parseInt(districtSelect.value||"0",10)||0;
+      deliveryFee = fee;
+      deliveryFeeEl.textContent = deliveryFee;
+    }
+
+    function updateTotals() {
+      const baseItems = itemsTotal();
+
+      updateDeliveryFee();
+      const effectiveDelivery = deliveryFee;
+
+      itemsTotalEl.textContent = baseItems;
+
+      // скидок больше нет
+      if (discountRow) discountRow.style.display = 'none';
+      if (discountAmountEl) discountAmountEl.textContent = '0';
+
+      deliveryFeeEl.textContent = effectiveDelivery;
+      const grand = baseItems + effectiveDelivery;
+      grandTotalEl.textContent = grand;
+
+      const progress = Math.min(5000, baseItems);
+      mobileRange.value = progress;
+      mobileRange.style.setProperty('--_p', (progress / 5000) * 100 + '%');
+      mobileTotal.textContent = baseItems;
+
+      syncCheckoutBtn();
+    }
+
+    function renderAddrSummary(){
+      if(customer.address){
+        const t=translations[language];
+        addrSummary.style.display='';
+        const url = buildAddressUrl();
+        addrSummary.innerHTML=
+          `<div><strong>${t.address}:</strong> <a href="${url}" target="_blank" rel="noopener">${customer.address}</a></div>
+           <div><strong>${t.name}:</strong> ${customer.name||''}</div>
+           <div><strong>${t.phone}:</strong> ${customer.phone||''}</div>`;
+      }else{
+        addrSummary.style.display='none';
+      }
+    }
+    function syncCheckoutBtn(){ checkoutBtn.disabled=!canCheckout(); }
+
+    function setLanguage(next){
+      language = next;
+      const t = translations[language];
+      heroText.textContent = t.delivery;
+      welcomeText.textContent = t.welcome;
+      myOrderLabel.textContent = t.myOrder;
+      openAddrBtn.textContent = t.specifyAddress;
+      deliveryPill.textContent = '📦 ' + t.deliveryPill;
+      deliveryCostRow.firstChild.textContent = t.deliveryCost + ': ';
+      dishesTotalRow.firstChild.textContent = t.dishesTotal + ': ';
+      grandTotalRow.firstChild.textContent = t.totalToPay + ': ';
+      checkoutBtn.textContent = t.placeOrder;
+      districtLabel.textContent = t.districtLabel;
+      payLabel.textContent = t.payLabel;
+
+      // addr modal
+      addrTitle.textContent = t.addrModal.title;
+      addrClose.textContent = t.addrModal.close;
+      addrCancel.textContent = t.addrModal.cancel;
+      addrConfirm.textContent = t.addrModal.confirm;
+      addrInput.placeholder = t.addrModal.addrPh;
+      nameInput.placeholder = t.addrModal.namePh;
+      phoneInput.placeholder = t.addrModal.phonePh;
+      mapToggle.textContent = t.addrModal.mapBtn;
+      geoBtn.textContent = t.addrModal.geoBtn;
+      mapSearch.placeholder = t.addrModal.searchPh;
+      addrNote.textContent = t.addrModal.note;
+      mapClose.title = t.addrModal.hideMap;
+      mapClose.setAttribute('aria-label', t.addrModal.hideMap);
+
+      // time modal
+      timeTitle.textContent = t.timeModal.title;
+      timeClose.textContent = t.timeModal.close;
+      timeCancel.textContent = t.timeModal.cancel;
+      timeConfirm.textContent = t.timeModal.confirm;
+      soonestLabel.textContent = t.soonest;
+      selecttimeLabel.textContent = t.selectTime;
+      commentLabel.textContent = t.comment;
+      commentInput.placeholder = t.commentPh;
+
+      langToggle.textContent = language==="ru" ? "🇺🇸 EN" : "🇷🇺 RU";
+
+      renderCats(); renderMenu(); renderCartItems(); renderAddrSummary(); updateTotals();
+      saveState();
+    }
+
+    /* ==== Картинки категорий ==== */
+    const CAT_IMAGES = {
+      "Супы": "/images/borsht3.jpeg",
+      "Основные блюда": "/images/befstroganof.jpeg",
+      "Салаты": "/images/salat cezar.jpeg",
+      "Гриль": "/images/kebab pork-beef1.jpeg",
+      "Заморозка": "/images/pelmeni 1kg.jpeg",
+      "Копчение": "/images/kopchenaya kyrica1.jpeg",
+    };
+
+    function renderCats(){
+      catStrip.innerHTML='';
+      Object.keys(CATEGORIES).forEach(cat=>{
+        const btn=document.createElement('button');
+        btn.className='cat-btn';
+        btn.setAttribute('type','button');
+        btn.setAttribute('aria-label', translations[language].categories[cat] || cat);
+
+        const img=document.createElement('img');
+        img.className='cat-img';
+        img.alt=translations[language].categories[cat] || cat;
+        img.src = CAT_IMAGES[cat] || '/images/logo.jpg';
+
+        const name=document.createElement('span');
+        name.className='cat-name';
+        name.textContent = translations[language].categories[cat] || cat;
+
+        btn.append(img, name);
+        btn.onclick=()=> document.getElementById('cat-'+slug(cat))?.scrollIntoView({behavior:'smooth',block:'start'});
+        catStrip.appendChild(btn);
+      });
+    }
+
+    /* SIZE выбор */
+    function makeSizeRow(initialSize, onChange){
+      const row = document.createElement('div');
+      row.className = 'size-row';
+
+      const dotStd = document.createElement('button');
+      dotStd.className = 'size-dot';
+      dotStd.setAttribute('data-size','Standart');
+      dotStd.setAttribute('aria-pressed','false');
+
+      const lblStd = document.createElement('span');
+      lblStd.className = 'size-label';
+      lblStd.textContent = 'Standart';
+
+      const dotXXL = document.createElement('button');
+      dotXXL.className = 'size-dot';
+      dotXXL.setAttribute('data-size','XXL');
+      dotXXL.setAttribute('aria-pressed','false');
+
+      const lblXXL = document.createElement('span');
+      lblXXL.className = 'size-label';
+      lblXXL.textContent = 'XXL';
+
+      row.append(dotStd, lblStd, dotXXL, lblXXL);
+
+      function setActive(sz){
+        [dotStd,dotXXL].forEach(btn=>{
+          const active = btn.getAttribute('data-size')===sz;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', String(active));
+        });
+        onChange?.(sz);
+      }
+
+      dotStd.addEventListener('click', ()=> setActive('Standart'));
+      dotXXL.addEventListener('click', ()=> setActive('XXL'));
+
+      setActive(initialSize || 'Standart');
+      return { row, setActive };
+    }
+
+    function renderMenu(){
+      menuRoot.innerHTML='';
+      Object.entries(CATEGORIES).forEach(([cat, items])=>{
+        const wrap=document.createElement('div');
+        const title=document.createElement('div');
+        title.className='cat-title';
+        title.id='cat-'+slug(cat);
+        title.textContent = translations[language].categories[cat] || cat;
+        wrap.appendChild(title);
+
+        const grid=document.createElement('div'); grid.className='menu-grid';
+        items.forEach(item=>{
+          const card=document.createElement('div'); card.className='menu-card';
+          const img=document.createElement('img'); img.src=item.img||'/placeholder.svg'; img.alt=getDishName(item.name);
+          const body=document.createElement('div'); body.className='card-body';
+          const nm=document.createElement('div'); nm.className='card-title'; nm.textContent=getDishName(item.name);
+          const ds=document.createElement('div'); ds.className='card-desc'; ds.textContent=getDishDesc(item.name, item.desc||'');
+          const foot=document.createElement('div'); foot.className='card-footer';
+          const pr=document.createElement('div'); pr.className='card-price';
+
+          const add=document.createElement('button'); add.className='add-btn'; add.textContent=translations[language].addToCart;
+
+          if (SIZE_VARIANTS[item.name]) {
+            let currentSize = 'Standart';
+            const { Standart, XXL } = SIZE_VARIANTS[item.name];
+
+            const setPriceBySize = (sz)=>{
+              pr.textContent = (sz==='XXL' ? XXL : Standart) + ' ฿';
+              currentSize = sz;
+            };
+
+            const { row, setActive } = makeSizeRow('Standart', setPriceBySize);
+            setActive('Standart');
+
+            foot.append(pr, add);
+            body.append(nm, ds, row, foot);
+            card.append(img, body);
+            grid.appendChild(card);
+
+            add.onclick = ()=>{
+              const price = (currentSize==='XXL') ? XXL : Standart;
+              const keyName = `${item.name} (${currentSize})`;
+              const e = cart[keyName] || { qty:0, price, img:item.img };
+              e.qty += 1;
+              e.price = price;
+              e.img = item.img;
+              cart[keyName] = e;
+              renderCartItems(); updateTotals();
+            };
+          } else {
+            pr.textContent=item.price+' ฿';
+            add.onclick=()=>{
+              const e=cart[item.name]||{qty:0,price:item.price,img:item.img};
+              e.qty+=1; e.price=item.price; e.img=item.img;
+              cart[item.name]=e; renderCartItems(); updateTotals();
+            };
+            foot.append(pr, add); body.append(nm, ds, foot);
+            card.append(img, body); grid.appendChild(card);
+          }
+        });
+        wrap.appendChild(grid);
+        menuRoot.appendChild(wrap);
+      });
+    }
+
+    function renderCartItems(){
+      const root=document.getElementById('cart-items');
+      root.innerHTML='';
+      Object.entries(cart).forEach(([name,item])=>{
+        const row=document.createElement('div'); row.className='cart-item';
+        const img=document.createElement('img'); img.src=item.img||'/placeholder.svg'; img.alt=name; Object.assign(img.style,{width:'48px',height:'48px',objectFit:'cover',borderRadius:'8px'});
+        const mid=document.createElement('div');
+        const top=document.createElement('div'); Object.assign(top.style,{display:'flex',justifyContent:'space-between',gap:'8px',alignItems:'center'});
+        const strong=document.createElement('strong'); strong.textContent=getDishName(name);
+        const rm=document.createElement('button'); rm.className='remove-btn'; rm.textContent=translations[language].remove;
+        rm.onclick=()=>{ delete cart[name]; renderCartItems(); updateTotals(); };
+        top.append(strong, rm);
+        const sub=document.createElement('div'); sub.className='summary-text'; sub.textContent = `${item.price} ฿ × ${item.qty} = ${item.qty*item.price} ฿`;
+        mid.append(top, sub);
+
+        const qty=document.createElement('div'); qty.className='qty-controls';
+        const minus=document.createElement('button'); minus.className='qty-btn'; minus.textContent='−';
+        const disp=document.createElement('span'); disp.className='qty-display'; disp.textContent=item.qty;
+        const plus=document.createElement('button'); plus.className='qty-btn'; plus.textContent='+';
+        minus.onclick=()=>{ item.qty-=1; if(item.qty<=0) delete cart[name]; renderCartItems(); updateTotals(); };
+        plus.onclick =()=>{ item.qty+=1; renderCartItems(); updateTotals(); };
+        qty.append(minus, disp, plus);
+
+        row.append(img, mid, qty); root.appendChild(row);
+      });
+      syncCheckoutBtn();
+    }
+
+    /* ==== Address Modal ==== */
+    function openAddressModal(){
+      if(!customer.address){ addrInput.value=""; }
+      if(!customer.name){ nameInput.value=""; }
+      if(!customer.phone){ phoneInput.value=""; }
+
+      addrConfirm.disabled = !canConfirmAddr();
+      addrModal.classList.add('active');
+      addrInput.focus();
+    }
+    function closeAddressModal(){ addrModal.classList.remove('active'); }
+    function canConfirmAddr(){
+      const addr=addrInput.value.trim();
+      const phone='+66'+(phoneInput.value||'').replace(/\D/g,'');
+      return addr.length>3 && /^\+66\d{9,10}$/.test(phone);
+    }
+    function confirmAddress(){
+      customer.address = addrInput.value.trim();
+      customer.name = nameInput.value.trim();
+      customer.phone = '+66' + (phoneInput.value||'').replace(/\D/g,'');
+      closeAddressModal();
+      openTimeModal();
+      renderAddrSummary(); updateTotals();
+    }
+    document.getElementById('open-address').onclick=openAddressModal;
+    addrClose.onclick=closeAddressModal; addrCancel.onclick=closeAddressModal; addrConfirm.onclick=confirmAddress;
+    addrModal.addEventListener('click',e=>{ if(e.target===addrModal) closeAddressModal(); });
+    [addrInput,nameInput,phoneInput].forEach(el=>{
+      el.addEventListener('input', ()=>{
+        if(el===phoneInput){ phoneInput.value=phoneInput.value.replace(/\D/g,'').slice(0,10); }
+        addrConfirm.disabled=!canConfirmAddr();
+      });
+    });
+
+    /* ==== Google Maps ==== */
+    const GOOGLE_MAPS_API_KEY = "AIzaSyBWF8CVNlAbdhdi6JL2ZJnwsQ_igxGNE5c"; // лучше вынести и ограничить по домену
+
+    let mapsLoaded = false;
+    let map = null, marker = null, geocoder = null, autocomplete = null;
+
+    function loadGoogleMaps() {
+      return new Promise((resolve, reject) => {
+        if (window.google && google.maps) return resolve();
+
+        const s = document.createElement("script");
+        s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+        s.async = true;
+        s.defer = true;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error("Maps load error"));
+        document.head.appendChild(s);
+      });
+    }
+
+    function initMap() {
+      const defaultCenter = { lat: 7.8804, lng: 98.3923 }; // Phuket
+      map = new google.maps.Map(mapBox, {
+        center: defaultCenter,
+        zoom: 12,
+        mapTypeControl: false,
+        streetViewControl: false,
+      });
+
+      geocoder = new google.maps.Geocoder();
+
+      // Autocomplete (Places)
+      autocomplete = new google.maps.places.Autocomplete(mapSearch, {
+        fields: ["geometry", "formatted_address", "name"],
+      });
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) return;
+        map.panTo(place.geometry.location);
+        map.setZoom(15);
+        setMarker(place.geometry.location);
+      });
+
+      // Click to set marker
+      map.addListener("click", (e) => setMarker(e.latLng));
+    }
+
+    function setMarker(latLng) {
+      if (!marker) marker = new google.maps.Marker({ map, position: latLng });
+      else marker.setPosition(latLng);
+
+      customer.location = { lat: latLng.lat(), lng: latLng.lng() };
+
+      if (!geocoder) geocoder = new google.maps.Geocoder();
+
+      // Reverse geocode -> put address into addrInput
+      geocoder.geocode({ location: latLng }, (results, status) => {
+        if (status === "OK" && results && results[0]) {
+          addrInput.value = results[0].formatted_address;
+        } else {
+          console.log("Geocode failed:", status, results);
+        }
+        addrConfirm.disabled = !canConfirmAddr();
+      });
+    }
+
+    async function toggleMap() {
+      try {
+        const hidden = (mapWrap.style.display === "none" || !mapWrap.style.display);
+        if (hidden) {
+          await loadGoogleMaps();
+          if (!mapsLoaded) { initMap(); mapsLoaded = true; }
+          mapWrap.style.display = "block";
+          setTimeout(() => { if (map) google.maps.event.trigger(map, "resize"); }, 50);
+        } else {
+          mapWrap.style.display = "none";
+        }
+      } catch (e) {
+        console.error(e);
+        alert(language === "ru"
+          ? "Не удалось загрузить карту (ключ/доступ/интернет)"
+          : "Failed to load map (key/access/internet)");
+      }
+    }
+
+    async function useMyLocation() {
+      try {
+        await loadGoogleMaps();
+        if (!mapsLoaded) { initMap(); mapsLoaded = true; }
+        if (!navigator.geolocation) {
+          alert(language === "ru" ? "Геолокация не поддерживается" : "Geolocation not supported");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const ll = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+            mapWrap.style.display = "block";
+            setTimeout(() => { if (map) google.maps.event.trigger(map, "resize"); }, 50);
+            map.panTo(ll);
+            map.setZoom(16);
+            setMarker(ll);
+          },
+          (err) => {
+            console.log("geo error:", err.code, err.message);
+            alert(language === "ru"
+              ? "Не удалось получить геолокацию (разрешение/HTTPS/вебвью Telegram)"
+              : "Failed to get location (permission/HTTPS/Telegram webview)");
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+      } catch (e) {
+        console.error(e);
+        alert(language === "ru" ? "Не удалось получить геолокацию" : "Failed to get location");
+      }
+    }
+
+    // bind buttons (ВАЖНО)
+    mapToggle.addEventListener("click", toggleMap);
+    geoBtn.addEventListener("click", useMyLocation);
+    mapClose.addEventListener("click", () => { mapWrap.style.display = "none"; });
+
+    /* ==== Time Modal ==== */
+    function openTimeModal(){
+      document.querySelectorAll('input[name="ordertime"]').forEach(r=> r.checked = (r.value===orderState.when));
+      timePickers.style.display = (orderState.when==='scheduled') ? '' : 'none';
+
+      if(!hourSelect.options.length){ fillHours(); }
+      hourSelect.value = orderState.hour;
+      minuteSelect.value = orderState.minute;
+      commentInput.value = orderState.comment || "";
+
+      timeModal.classList.add('active');
+    }
+    function closeTimeModal(){ timeModal.classList.remove('active'); }
+    function fillHours(){ hourSelect.innerHTML=''; for(let h=10;h<=22;h++){ const v=String(h).padStart(2,'0'); hourSelect.appendChild(new Option(v,v)); } }
+
+    document.querySelectorAll('input[name="ordertime"]').forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const val = document.querySelector('input[name="ordertime"]:checked').value;
+        orderState.when = val;
+        timePickers.style.display = (val==='scheduled') ? '' : 'none';
+      });
+    });
+    hourSelect.addEventListener('change', ()=>{ orderState.hour = hourSelect.value; });
+    minuteSelect.addEventListener('change', ()=>{ orderState.minute = minuteSelect.value; });
+    commentInput.addEventListener('input', ()=>{ orderState.comment = commentInput.value; });
+
+    timeClose.onclick = closeTimeModal;
+    timeCancel.onclick = closeTimeModal;
+    timeConfirm.onclick = ()=>{
+      closeTimeModal();
+      syncCheckoutBtn();
+    };
+    timeModal.addEventListener('click',e=>{ if(e.target===timeModal) closeTimeModal(); });
+
+    /* ==== Business hours (Bangkok) ==== */
+    function isClosedBangkok(orderDate, orderTime) {
+      // Если выбрано запланированное время заказа
+      if (orderDate && orderTime) {
+        const [Y, M, D] = orderDate.split('-').map(Number);
+        const [h, m] = orderTime.split(':').map(Number);
+
+        const localDate = new Date(Y, M - 1, D, h, m || 0);
+
+        const dow = localDate.getDay();
+        const hour = localDate.getHours();
+        const minute = localDate.getMinutes();
+
+        const totalMinutes = hour * 60 + minute;
+
+        const OPEN = 10 * 60;
+        const CLOSE = 22 * 60;
+
+        return dow === 0 || totalMinutes < OPEN || totalMinutes >= CLOSE;
+      }
+
+      // Текущее время Bangkok через безопасный Intl.DateTimeFormat
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Bangkok',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).formatToParts(new Date());
+
+      const weekday = parts.find(p => p.type === 'weekday').value;
+      const hour = Number(parts.find(p => p.type === 'hour').value);
+      const minute = Number(parts.find(p => p.type === 'minute').value);
+
+      const totalMinutes = hour * 60 + minute;
+
+      const OPEN = 10 * 60;
+      const CLOSE = 22 * 60;
+
+      return weekday === 'Sun' || totalMinutes < OPEN || totalMinutes >= CLOSE;
+    }
+    function todayISO(){
+      const n=new Date();
+      return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    }
+
+    /* ==== Address link ==== */
+    function buildAddressUrl(){
+      if(customer.location && typeof customer.location.lat==='number' && typeof customer.location.lng==='number'){
+        return `https://maps.google.com/?q=${customer.location.lat},${customer.location.lng}`;
+      }
+      const q=encodeURIComponent(customer.address||'');
+      return `https://www.google.com/maps/search/?api=1&query=${q}`;
+    }
+
+    function buildSummaryText(payload) {
+      let lines = [];
+      const baseItemsTotal = Object.values(payload.items).reduce((s, i) => s + i.qty * i.price, 0);
+
+      lines.push("Заказ Smoke Factory BBQ");
+      lines.push("— — —");
+      Object.entries(payload.items).forEach(([n, i]) => {
+        lines.push(`${n}: ${i.qty} × ${i.price} = ${i.qty * i.price} ฿`);
+      });
+
+      lines.push(`Сумма блюд: ${baseItemsTotal} ฿`);
+      lines.push(`Доставка: ${payload.delivery} ฿`);
+      lines.push(`Итого: ${baseItemsTotal + payload.delivery} ฿`);
+      lines.push(`Оплата: ${payload.payMethod}`);
+      lines.push(`Телефон: ${payload.phone}`);
+      lines.push(`Имя: ${payload.name}`);
+      lines.push(`Адрес: ${payload.address_plain || payload.address}`);
+      if (payload.comment) lines.push(`Комментарий: ${payload.comment}`);
+      lines.push(`Когда: ${payload.orderWhen === "asap" ? "Ближайшее" : payload.orderTime}`);
+      return lines.join("\n");
+    }
+
+    // Финальная отправка заказа (учитывает "мы закрыты")
+    function finalizeOrderSend(payload){
+      const closed = isClosedBangkok();
+      if (closed){
+        payloadPendingForClose = payload;
+        openClosedModal();
+        return;
+      }
+      try {
+        if (window.Telegram && Telegram.WebApp) {
+          Telegram.WebApp.sendData(JSON.stringify(payload));
+        }
+        alert(translations[language].thanks);
+        if (window.Telegram && Telegram.WebApp) {
+          Telegram.WebApp.close();
+        }
+      } catch(e){
+        console.error("sendData error:", e);
+        alert(translations[language].error);
+      }
+    }
+
+    /* ==== Submit Order ==== */
+    function submitOrder() {
+      const items = {};
+      Object.entries(cart).forEach(([n, i]) => {
+        items[n] = { qty: i.qty, price: i.price };
+      });
+
+      const whenVal = orderState.when;
+      const orderTime = whenVal === 'scheduled' ? `${orderState.hour}:${orderState.minute}` : 'soonest';
+
+      const payMethod = document.querySelector('input[name="payment"]:checked')?.value || 'Thai bank';
+      const comment = (orderState.comment || '').trim();
+
+      const mapUrl = buildAddressUrl();
+
+      const payload = {
+        items,
+        phone: customer.phone,
+        name: customer.name,
+        address: mapUrl,
+        address_plain: customer.address || '',
+        address_url: mapUrl,
+        addressMarkdown: `[Адрес](${mapUrl})`,
+        addressLine: `Адрес: ${mapUrl}`,
+        comment,
+        comments: comment,
+        note: comment,
+        notes: comment,
+        comment_text: comment,
+        commentLine: comment ? `Комментарий: ${comment}` : '',
+        delivery: deliveryFee,
+        total: itemsTotal() + deliveryFee,
+        discount: 0,
+        orderDate: todayISO(),
+        orderTime,
+        orderWhen: whenVal,
+        payMethod
+      };
+
+      payload.summary = buildSummaryText(payload);
+      finalizeOrderSend(payload);
+    }
+
+    /* ==== Events & Init ==== */
+    const jumpCart=document.getElementById('jump-cart');
+    districtSelect.addEventListener('change', ()=>{ updateTotals(); saveState(); });
+    jumpCart.onclick = ()=> document.getElementById('cart')?.scrollIntoView({behavior:'smooth'});
+    document.getElementById('checkout-btn').onclick = submitOrder;
+    langToggle.onclick = ()=> { setLanguage(language==='ru'?'en':'ru'); saveState(); };
+    window.addEventListener('beforeunload', saveState);
+
+    // Домик (вверх)
+    mobileHome.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+    function fillUIHoursOnce(){ fillHours(); hourSelect.value=orderState.hour; minuteSelect.value=orderState.minute; }
+
+    function init(){
+      loadState();
+      setLanguage(language);
+      renderCats(); renderMenu(); renderCartItems();
+      renderAddrSummary();
+      fillUIHoursOnce();
+      updateTotals();
+    }
+    init();
+  </script>
+</body>
+</html>
