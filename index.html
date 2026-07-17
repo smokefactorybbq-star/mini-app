@@ -141,6 +141,34 @@
       .mobile-home-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer}
       .mobile-home-btn svg{display:block}
     }
+
+
+    /* account */
+    .account-trigger{margin-top:8px;margin-left:8px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;font-weight:700}
+    .account-modal-content{width:min(760px,96vw);max-height:96vh}
+    .account-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+    .account-avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.18);background:#f3f4f6}
+    .loyalty-box{width:100%;padding:12px;border:1px solid var(--border);border-radius:14px;background:#f8fafc}
+    .loyalty-track{position:relative;height:14px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin:10px 0 6px}
+    .loyalty-fill{height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .25s ease}
+    .loyalty-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+    .profile-grid .full{grid-column:1/-1}
+    .history-title{font-size:20px;font-weight:800;margin-top:8px}
+    .history-list{display:flex;flex-direction:column;gap:12px}
+    .history-card{border:1px solid var(--border);border-radius:16px;padding:12px;background:#fff}
+    .history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .history-items{display:flex;flex-direction:column;gap:8px}
+    .history-item{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center}
+    .history-item img{width:48px;height:48px;border-radius:10px;object-fit:cover;background:#f3f4f6}
+    .repeat-order-btn{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:11px;font-weight:800;cursor:pointer}
+    .account-message{min-height:20px;font-size:13px;color:var(--muted)}
+    @media(max-width:768px){
+      .account-modal-content{width:100vw;height:100vh;max-height:100vh;border-radius:0}
+      .account-modal-content .modal-body{padding-bottom:calc(env(safe-area-inset-bottom,0) + 24px);scrollbar-gutter:stable}
+      .profile-grid{grid-template-columns:1fr}
+      .profile-grid .full{grid-column:auto}
+    }
   </style>
 </head>
 
@@ -156,6 +184,7 @@
       <div>
         <div class="hero-text" id="hero-text">Delivery 10.00 to 22.00 MON-SAT</div>
         <button class="lang-toggle" id="lang-toggle" aria-label="Switch language">🇷🇺 RU</button>
+        <button class="account-trigger" id="account-open" type="button">👤 Личный кабинет</button>
       </div>
     </div>
   </header>
@@ -254,6 +283,43 @@
         <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-10.5Z" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
       </svg>
     </button>
+  </div>
+
+
+  <!-- Account Modal -->
+  <div class="modal-backdrop" id="account-modal">
+    <div class="modal-content account-modal-content" role="dialog" aria-modal="true" aria-labelledby="account-title">
+      <div class="modal-header">
+        <strong id="account-title">Личный кабинет</strong>
+        <button class="btn" id="account-close" aria-label="Закрыть">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="account-top">
+          <img class="account-avatar" id="account-avatar" src="/images/logo.jpg" alt="Аватар">
+          <div><strong id="account-user-name">Пользователь</strong></div>
+          <div class="loyalty-box">
+            <div><strong id="loyalty-sum">0 / 20 000 ฿</strong></div>
+            <div class="loyalty-track"><div class="loyalty-fill" id="loyalty-fill"></div></div>
+            <div class="loyalty-labels"><span>0</span><span>5 000</span><span>10 000</span><span>15 000</span><span>20 000</span></div>
+            <div style="margin-top:8px"><strong id="loyalty-level">Скидка: 0%</strong></div>
+          </div>
+        </div>
+
+        <div class="profile-grid">
+          <input class="input" id="profile-name" placeholder="Имя">
+          <div class="phone-wrap">
+            <div class="phone-prefix">+66</div>
+            <input class="phone-input" id="profile-phone" inputmode="numeric" maxlength="10" placeholder="Номер телефона">
+          </div>
+          <textarea class="input full" id="profile-address" rows="3" placeholder="Адрес"></textarea>
+        </div>
+        <button class="btn btn-primary" id="profile-save">Сохранить данные</button>
+        <div class="account-message" id="account-message"></div>
+
+        <div class="history-title">История заказов</div>
+        <div class="history-list" id="history-list"><div class="muted">История пока пуста.</div></div>
+      </div>
+    </div>
   </div>
 
   <!-- Address Modal -->
@@ -516,6 +582,7 @@
     const cart = {};
     const customer = { address:"", name:"", phone:"", location:null };
     const orderState = { when:"asap", hour:"10", minute:"00", comment:"" };
+    const accountState = { ready:false, profile:null, loyalty:{totalSpend:0,discountPercent:0,ordersCount:0}, orders:[] };
     let deliveryFee = 0;
 
     let payloadPendingForClose = null;
@@ -568,6 +635,23 @@
     const mobileRange=document.getElementById('mobile-range');
     const mobileTotal=document.getElementById('mobile-total');
     const mobileHome=document.getElementById('mobile-home');
+
+    // Account modal
+    const accountOpen=document.getElementById('account-open');
+    const accountModal=document.getElementById('account-modal');
+    const accountClose=document.getElementById('account-close');
+    const accountAvatar=document.getElementById('account-avatar');
+    const accountUserName=document.getElementById('account-user-name');
+    const loyaltySum=document.getElementById('loyalty-sum');
+    const loyaltyFill=document.getElementById('loyalty-fill');
+    const loyaltyLevel=document.getElementById('loyalty-level');
+    const profileName=document.getElementById('profile-name');
+    const profilePhone=document.getElementById('profile-phone');
+    const profileAddress=document.getElementById('profile-address');
+    const profileSave=document.getElementById('profile-save');
+    const accountMessage=document.getElementById('account-message');
+    const historyList=document.getElementById('history-list');
+
 
     // Address modal
     const addrModal=document.getElementById('address-modal');
@@ -654,12 +738,13 @@
 
       itemsTotalEl.textContent = baseItems;
 
-      // скидок больше нет
-      if (discountRow) discountRow.style.display = 'none';
-      if (discountAmountEl) discountAmountEl.textContent = '0';
+      const discountPercent = Number(accountState.loyalty.discountPercent || 0);
+      const discountAmount = Math.floor(baseItems * discountPercent / 100);
+      if (discountRow) discountRow.style.display = discountAmount > 0 ? '' : 'none';
+      if (discountAmountEl) discountAmountEl.textContent = discountAmount;
 
       deliveryFeeEl.textContent = effectiveDelivery;
-      const grand = baseItems + effectiveDelivery;
+      const grand = baseItems - discountAmount + effectiveDelivery;
       grandTotalEl.textContent = grand;
 
       const progress = Math.min(5000, baseItems);
@@ -729,6 +814,144 @@
 
       renderCats(); renderMenu(); renderCartItems(); renderAddrSummary(); updateTotals();
       saveState();
+    }
+
+
+    function telegramInitData(){
+      try { return (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) || ''; }
+      catch(_){ return ''; }
+    }
+
+    async function apiRequest(url, options={}){
+      const initData = telegramInitData();
+      if(!initData) throw new Error('Откройте меню внутри Telegram');
+      const headers = Object.assign({'Content-Type':'application/json','X-Telegram-Init-Data':initData}, options.headers||{});
+      const response = await fetch(url, Object.assign({}, options, {headers}));
+      const data = await response.json().catch(()=>({ok:false,error:'Ошибка ответа сервера'}));
+      if(!response.ok || !data.ok) throw new Error(data.error || 'Ошибка сервера');
+      return data;
+    }
+
+    function applyAccountData(data){
+      accountState.ready = true;
+      accountState.profile = data.profile || {};
+      accountState.loyalty = data.loyalty || {totalSpend:0,discountPercent:0,ordersCount:0};
+      accountState.orders = data.orders || [];
+
+      const p = accountState.profile;
+      profileName.value = p.name || '';
+      profilePhone.value = String(p.phone || '').replace(/^\+66/, '').replace(/\D/g,'').slice(0,10);
+      profileAddress.value = p.address || '';
+      accountAvatar.src = p.photoUrl || '/images/logo.jpg';
+      accountUserName.textContent = p.name || p.telegramFirstName || 'Пользователь';
+
+      if(p.name && !customer.name) customer.name = p.name;
+      if(p.phone && !customer.phone) customer.phone = p.phone;
+      if(p.address && !customer.address) customer.address = p.address;
+
+      const spend = Number(accountState.loyalty.totalSpend || 0);
+      const discount = Number(accountState.loyalty.discountPercent || 0);
+      loyaltySum.textContent = `${spend.toLocaleString('ru-RU')} / 20 000 ฿`;
+      loyaltyFill.style.width = `${Math.min(100, spend/20000*100)}%`;
+      loyaltyLevel.textContent = `Уровень скидки: ${discount}%`;
+      renderOrderHistory();
+      renderAddrSummary();
+      updateTotals();
+    }
+
+    function openAccountModal(){
+      accountModal.classList.add('active');
+      document.body.style.overflow='hidden';
+    }
+    function closeAccountModal(){
+      accountModal.classList.remove('active');
+      document.body.style.overflow='';
+    }
+
+    function findCurrentMenuItem(name){
+      const base = name.replace(/ \((Standart|XXL)\)$/,'');
+      for(const items of Object.values(CATEGORIES)){
+        const found = items.find(x=>x.name===base);
+        if(found){
+          if(SIZE_VARIANTS[base]){
+            const size = name.includes('(XXL)') ? 'XXL' : 'Standart';
+            return {price:SIZE_VARIANTS[base][size], img:found.img};
+          }
+          return {price:found.price, img:found.img};
+        }
+      }
+      return null;
+    }
+
+    function renderOrderHistory(){
+      historyList.innerHTML='';
+      if(!accountState.orders.length){
+        historyList.innerHTML='<div class="muted">История пока пуста.</div>';
+        return;
+      }
+      accountState.orders.forEach(order=>{
+        const card=document.createElement('div'); card.className='history-card';
+        const head=document.createElement('div'); head.className='history-head';
+        const left=document.createElement('div');
+        const date=new Date(order.created_at);
+        left.innerHTML=`<strong>Заказ №${order.id}</strong><div class="muted">${date.toLocaleString('ru-RU')}</div>`;
+        const total=document.createElement('strong'); total.textContent=`${order.total} ฿`;
+        head.append(left,total);
+        const itemsWrap=document.createElement('div'); itemsWrap.className='history-items';
+        (order.items||[]).forEach(item=>{
+          const row=document.createElement('div'); row.className='history-item';
+          const img=document.createElement('img'); img.src=item.img || findCurrentMenuItem(item.name)?.img || '/images/logo.jpg'; img.alt=item.name;
+          const text=document.createElement('div'); text.innerHTML=`<strong>${item.name}</strong><div class="muted">${item.qty} × ${item.price} ฿</div>`;
+          const sum=document.createElement('div'); sum.textContent=`${item.qty*item.price} ฿`;
+          row.append(img,text,sum); itemsWrap.append(row);
+        });
+        const repeat=document.createElement('button'); repeat.className='repeat-order-btn'; repeat.textContent='Повторить заказ';
+        repeat.onclick=()=>repeatOrder(order);
+        card.append(head,itemsWrap,repeat); historyList.append(card);
+      });
+    }
+
+    function repeatOrder(order){
+      Object.keys(cart).forEach(k=>delete cart[k]);
+      (order.items||[]).forEach(item=>{
+        const current=findCurrentMenuItem(item.name);
+        cart[item.name]={qty:Number(item.qty)||1, price:(current?.price ?? Number(item.price) ?? 0), img:current?.img || item.img || ''};
+      });
+      if(accountState.profile){
+        customer.name=accountState.profile.name||customer.name;
+        customer.phone=accountState.profile.phone||customer.phone;
+        customer.address=accountState.profile.address||customer.address;
+      }
+      renderCartItems(); renderAddrSummary(); updateTotals(); closeAccountModal();
+      if(!customer.address || !validPhone(customer.phone)){
+        openAddressModal();
+        return;
+      }
+      submitOrder();
+    }
+
+    async function bootstrapAccount(){
+      try{
+        const sessionKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const data = await apiRequest('/api/bootstrap',{method:'POST',body:JSON.stringify({sessionKey})});
+        applyAccountData(data);
+      }catch(error){
+        console.warn('Account bootstrap:',error.message);
+        accountMessage.textContent=error.message;
+      }
+    }
+
+    async function saveProfile(){
+      accountMessage.textContent='Сохраняем...';
+      profileSave.disabled=true;
+      try{
+        const phone='+66'+profilePhone.value.replace(/\D/g,'').slice(0,10);
+        const data=await apiRequest('/api/profile',{method:'PUT',body:JSON.stringify({name:profileName.value.trim(),phone,address:profileAddress.value.trim()})});
+        applyAccountData(data);
+        accountMessage.textContent='Данные сохранены';
+      }catch(error){
+        accountMessage.textContent=error.message;
+      }finally{ profileSave.disabled=false; }
     }
 
     /* ==== Картинки категорий ==== */
@@ -1156,7 +1379,8 @@
 
       lines.push(`Сумма блюд: ${baseItemsTotal} ฿`);
       lines.push(`Доставка: ${payload.delivery} ฿`);
-      lines.push(`Итого: ${baseItemsTotal + payload.delivery} ฿`);
+      if (payload.discountAmount) lines.push(`Скидка ${payload.discountPercent}%: -${payload.discountAmount} ฿`);
+      lines.push(`Итого: ${payload.total} ฿`);
       lines.push(`Оплата: ${payload.payMethod}`);
       lines.push(`Телефон: ${payload.phone}`);
       lines.push(`Имя: ${payload.name}`);
@@ -1219,8 +1443,11 @@
         comment_text: comment,
         commentLine: comment ? `Комментарий: ${comment}` : '',
         delivery: deliveryFee,
-        total: itemsTotal() + deliveryFee,
-        discount: 0,
+        itemsTotal: itemsTotal(),
+        discountPercent: Number(accountState.loyalty.discountPercent || 0),
+        discountAmount: Math.floor(itemsTotal() * Number(accountState.loyalty.discountPercent || 0) / 100),
+        discount: Math.floor(itemsTotal() * Number(accountState.loyalty.discountPercent || 0) / 100),
+        total: itemsTotal() - Math.floor(itemsTotal() * Number(accountState.loyalty.discountPercent || 0) / 100) + deliveryFee,
         orderDate: todayISO(),
         orderTime,
         orderWhen: whenVal,
@@ -1238,6 +1465,12 @@
     document.getElementById('checkout-btn').onclick = submitOrder;
     langToggle.onclick = ()=> { setLanguage(language==='ru'?'en':'ru'); saveState(); };
     window.addEventListener('beforeunload', saveState);
+    accountOpen.onclick=openAccountModal;
+    accountClose.onclick=closeAccountModal;
+    accountModal.addEventListener('click',e=>{if(e.target===accountModal) closeAccountModal();});
+    profileSave.onclick=saveProfile;
+    profilePhone.addEventListener('input',()=>{profilePhone.value=profilePhone.value.replace(/\D/g,'').slice(0,10);});
+
 
     // Домик (вверх)
     mobileHome.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
@@ -1251,6 +1484,7 @@
       renderAddrSummary();
       fillUIHoursOnce();
       updateTotals();
+      bootstrapAccount();
     }
     init();
   </script>
