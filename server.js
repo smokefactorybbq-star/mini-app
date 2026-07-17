@@ -65,13 +65,13 @@ app.use((req, res, next) => {
 
   const startedAt = Date.now();
 
-  console.log(`[HTTP] ${req.method} ${req.originalUrl}`);
+  console.log(`[HTTP] ${req.method} ${req.path}`);
 
   res.on("finish", () => {
     const duration = Date.now() - startedAt;
 
     console.log(
-      `[HTTP] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration} ms)`
+      `[HTTP] ${req.method} ${req.path} -> ${res.statusCode} (${duration} ms)`
     );
   });
 
@@ -159,10 +159,6 @@ function validateTelegramInitData(initData) {
   const authDate = Number(params.get("auth_date") || 0);
   const currentTime = Math.floor(Date.now() / 1000);
 
-  /*
-   * Telegram initData действует 24 часа.
-   * Также запрещаем дату более чем на 5 минут из будущего.
-   */
   if (
     !authDate ||
     currentTime - authDate > 24 * 60 * 60 ||
@@ -192,19 +188,107 @@ function validateTelegramInitData(initData) {
   return user;
 }
 
-function telegramAuth(req, res, next) {
+function decodeBase64Url(value) {
+  const normalized = String(value || "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const paddingLength = (4 - (normalized.length % 4)) % 4;
+  const padded = normalized + "=".repeat(paddingLength);
+
+  return Buffer.from(padded, "base64").toString("utf8");
+}
+
+function validateSignedLaunchToken(token, receivedSignature) {
+  if (!token || !receivedSignature) {
+    throw new Error("Signed Mini App authorization is missing");
+  }
+
+  const calculatedSignature = crypto
+    .createHmac("sha256", BOT_TOKEN)
+    .update(String(token))
+    .digest("hex");
+
+  if (
+    !/^[a-f0-9]{64}$/i.test(receivedSignature) ||
+    !/^[a-f0-9]{64}$/i.test(calculatedSignature)
+  ) {
+    throw new Error("Invalid Mini App signature");
+  }
+
+  const receivedBuffer = Buffer.from(receivedSignature, "hex");
+  const calculatedBuffer = Buffer.from(calculatedSignature, "hex");
+
+  if (
+    receivedBuffer.length !== calculatedBuffer.length ||
+    !crypto.timingSafeEqual(receivedBuffer, calculatedBuffer)
+  ) {
+    throw new Error("Invalid Mini App signature");
+  }
+
+  let payload;
+
+  try {
+    payload = JSON.parse(decodeBase64Url(token));
+  } catch {
+    throw new Error("Invalid Mini App user token");
+  }
+
+  const timestamp = Number(payload?.t || payload?.ts || 0);
+  const currentTime = Math.floor(Date.now() / 1000);
+  const maxAgeSeconds = 30 * 24 * 60 * 60;
+
+  if (
+    !timestamp ||
+    currentTime - timestamp > maxAgeSeconds ||
+    timestamp > currentTime + 5 * 60
+  ) {
+    throw new Error("Mini App button expired. Send /start to the bot");
+  }
+
+  if (!(payload?.i || payload?.id)) {
+    throw new Error("Mini App user ID is missing");
+  }
+
+  return {
+    id: payload.i || payload.id,
+    username: payload.n || payload.username || "",
+    first_name: payload.f || payload.first_name || "",
+    last_name: payload.l || payload.last_name || "",
+    photo_url: payload.p || payload.photo_url || ""
+  };
+}
+
+function miniAppAuth(req, res, next) {
   try {
     const initData =
       req.get("X-Telegram-Init-Data") ||
       req.body?.initData ||
       "";
 
-    req.telegramUser = validateTelegramInitData(initData);
+    if (initData) {
+      req.telegramUser = validateTelegramInitData(initData);
+      req.authSource = "telegram-init-data";
+      return next();
+    }
+
+    const token =
+      req.get("X-Miniapp-User-Token") ||
+      req.body?.miniAppUserToken ||
+      "";
+
+    const signature =
+      req.get("X-Miniapp-Signature") ||
+      req.body?.miniAppSignature ||
+      "";
+
+    req.telegramUser = validateSignedLaunchToken(token, signature);
+    req.authSource = "signed-keyboard-url";
 
     return next();
   } catch (error) {
     console.error(
-      `[AUTH] ${req.method} ${req.originalUrl}: ${error.message}`
+      `[AUTH] ${req.method} ${req.path}: ${error.message}`
     );
 
     return res.status(401).json({
@@ -509,7 +593,7 @@ app.get("/health", async (req, res) => {
  * Вызывается при открытии Mini App.
  * Создаёт или обновляет Telegram-пользователя и загружает его профиль.
  */
-app.post("/api/bootstrap", telegramAuth, async (req, res) => {
+app.post("/api/bootstrap", miniAppAuth, async (req, res) => {
   try {
     const user = await upsertTelegramUser(req.telegramUser);
 
@@ -542,7 +626,7 @@ app.post("/api/bootstrap", telegramAuth, async (req, res) => {
     const data = await getAccountData(user.telegram_id);
 
     console.log(
-      `[ACCOUNT] Bootstrap completed for Telegram ID ${user.telegram_id}`
+      `[ACCOUNT] Bootstrap completed for Telegram ID ${user.telegram_id}; auth=${req.authSource}`
     );
 
     return res.json({
@@ -649,13 +733,13 @@ async function saveProfileHandler(req, res) {
  * Текущий index.html использует PUT.
  * POST также оставлен для совместимости.
  */
-app.put("/api/profile", telegramAuth, saveProfileHandler);
-app.post("/api/profile", telegramAuth, saveProfileHandler);
+app.put("/api/profile", miniAppAuth, saveProfileHandler);
+app.post("/api/profile", miniAppAuth, saveProfileHandler);
 
 /*
  * Повторная загрузка данных личного кабинета.
  */
-app.get("/api/account", telegramAuth, async (req, res) => {
+app.get("/api/account", miniAppAuth, async (req, res) => {
   try {
     await upsertTelegramUser(req.telegramUser);
 
