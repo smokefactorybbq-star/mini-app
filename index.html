@@ -942,16 +942,62 @@
     }
 
     async function saveProfile(){
+      const name = profileName.value.trim();
+      let phoneDigits = profilePhone.value.replace(/\D/g,'').slice(0,10);
+      const address = profileAddress.value.trim();
+
+      // При вводе тайского номера 0XXXXXXXXX отправляем +66XXXXXXXXX.
+      if(phoneDigits.length === 10 && phoneDigits.startsWith('0')){
+        phoneDigits = phoneDigits.slice(1);
+      }
+      const phone = '+66' + phoneDigits;
+
+      if(!name){
+        accountMessage.textContent='Введите имя';
+        profileName.focus();
+        return;
+      }
+      if(!/^\+66\d{9}$/.test(phone)){
+        accountMessage.textContent='Введите тайский номер: 0XXXXXXXXX или 9 цифр после +66';
+        profilePhone.focus();
+        return;
+      }
+      if(address.length < 4){
+        accountMessage.textContent='Введите адрес';
+        profileAddress.focus();
+        return;
+      }
+
       accountMessage.textContent='Сохраняем...';
       profileSave.disabled=true;
+
       try{
-        const phone='+66'+profilePhone.value.replace(/\D/g,'').slice(0,10);
-        const data=await apiRequest('/api/profile',{method:'PUT',body:JSON.stringify({name:profileName.value.trim(),phone,address:profileAddress.value.trim()})});
+        const data=await apiRequest('/api/profile',{
+          method:'PUT',
+          body:JSON.stringify({name,phone,address})
+        });
+
         applyAccountData(data);
-        accountMessage.textContent='Данные сохранены';
+
+        customer.name=name;
+        customer.phone=phone;
+        customer.address=address;
+
+        nameInput.value=name;
+        phoneInput.value=phoneDigits;
+        addrInput.value=address;
+
+        renderAddrSummary();
+        updateTotals();
+        saveState();
+
+        accountMessage.textContent='✅ Данные сохранены';
       }catch(error){
-        accountMessage.textContent=error.message;
-      }finally{ profileSave.disabled=false; }
+        console.error('Profile save error:',error);
+        accountMessage.textContent='Ошибка сохранения: '+(error.message||'неизвестная ошибка');
+      }finally{
+        profileSave.disabled=false;
+      }
     }
 
     /* ==== Картинки категорий ==== */
@@ -1465,11 +1511,19 @@
     document.getElementById('checkout-btn').onclick = submitOrder;
     langToggle.onclick = ()=> { setLanguage(language==='ru'?'en':'ru'); saveState(); };
     window.addEventListener('beforeunload', saveState);
-    accountOpen.onclick=openAccountModal;
-    accountClose.onclick=closeAccountModal;
+    accountOpen.addEventListener('click',()=>{
+      openAccountModal();
+      if(!accountState.ready){
+        accountMessage.textContent='Загружаем данные...';
+        bootstrapAccount();
+      }
+    });
+    accountClose.addEventListener('click',closeAccountModal);
     accountModal.addEventListener('click',e=>{if(e.target===accountModal) closeAccountModal();});
-    profileSave.onclick=saveProfile;
-    profilePhone.addEventListener('input',()=>{profilePhone.value=profilePhone.value.replace(/\D/g,'').slice(0,10);});
+    profileSave.addEventListener('click',saveProfile);
+    profilePhone.addEventListener('input',()=>{
+      profilePhone.value=profilePhone.value.replace(/\D/g,'').slice(0,10);
+    });
 
 
     // Домик (вверх)
@@ -1490,3 +1544,4 @@
   </script>
 </body>
 </html>
+
