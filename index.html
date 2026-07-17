@@ -148,6 +148,15 @@
     .account-modal-content{width:min(760px,96vw);max-height:96vh}
     .account-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
     .account-avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.18);background:#f3f4f6}
+    .telegram-name{font-size:18px;font-weight:800}
+    .receipt-name-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+    .receipt-name-label{font-size:13px;color:var(--muted)}
+    .receipt-name-value{font-weight:800}
+    .name-edit-btn{width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;display:grid;place-items:center;font-size:16px}
+    .name-editor{display:none;width:100%;padding:12px;border:1px solid var(--border);border-radius:14px;background:#fff}
+    .name-editor.active{display:block}
+    .name-editor-actions{display:flex;gap:8px;margin-top:10px}
+    .name-editor-actions .btn{flex:1}
     .loyalty-box{width:100%;padding:12px;border:1px solid var(--border);border-radius:14px;background:#f8fafc}
     .loyalty-track{position:relative;height:14px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin:10px 0 6px}
     .loyalty-fill{height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .25s ease}
@@ -296,7 +305,19 @@
       <div class="modal-body">
         <div class="account-top">
           <img class="account-avatar" id="account-avatar" src="/images/logo.jpg" alt="Аватар">
-          <div><strong id="account-user-name">Пользователь</strong></div>
+          <div class="telegram-name" id="account-user-name">Пользователь</div>
+          <div class="receipt-name-row">
+            <span class="receipt-name-label">Имя в заказе и чеке:</span>
+            <span class="receipt-name-value" id="receipt-name-value">Не указано</span>
+            <button class="name-edit-btn" id="name-edit-btn" type="button" aria-label="Изменить имя">✏️</button>
+          </div>
+          <div class="name-editor" id="name-editor">
+            <input class="input" id="profile-name" placeholder="Имя для заказа и чека">
+            <div class="name-editor-actions">
+              <button class="btn" id="name-edit-cancel" type="button">Отмена</button>
+              <button class="btn btn-primary" id="name-edit-save" type="button">Сохранить имя</button>
+            </div>
+          </div>
           <div class="loyalty-box">
             <div><strong id="loyalty-sum">0 / 20 000 ฿</strong></div>
             <div class="loyalty-track"><div class="loyalty-fill" id="loyalty-fill"></div></div>
@@ -306,7 +327,6 @@
         </div>
 
         <div class="profile-grid">
-          <input class="input" id="profile-name" placeholder="Имя">
           <div class="phone-wrap">
             <div class="phone-prefix">+66</div>
             <input class="phone-input" id="profile-phone" inputmode="numeric" maxlength="10" placeholder="Номер телефона">
@@ -642,6 +662,11 @@
     const accountClose=document.getElementById('account-close');
     const accountAvatar=document.getElementById('account-avatar');
     const accountUserName=document.getElementById('account-user-name');
+    const receiptNameValue=document.getElementById('receipt-name-value');
+    const nameEditBtn=document.getElementById('name-edit-btn');
+    const nameEditor=document.getElementById('name-editor');
+    const nameEditCancel=document.getElementById('name-edit-cancel');
+    const nameEditSave=document.getElementById('name-edit-save');
     const loyaltySum=document.getElementById('loyalty-sum');
     const loyaltyFill=document.getElementById('loyalty-fill');
     const loyaltyLevel=document.getElementById('loyalty-level');
@@ -839,15 +864,23 @@
       accountState.orders = data.orders || [];
 
       const p = accountState.profile;
-      profileName.value = p.name || '';
+      const telegramFullName = [p.telegramFirstName, p.telegramLastName].filter(Boolean).join(' ').trim();
+      const receiptName = p.name || p.telegramFirstName || '';
+
+      profileName.value = receiptName;
       profilePhone.value = String(p.phone || '').replace(/^\+66/, '').replace(/\D/g,'').slice(0,10);
       profileAddress.value = p.address || '';
       accountAvatar.src = p.photoUrl || '/images/logo.jpg';
-      accountUserName.textContent = p.name || p.telegramFirstName || 'Пользователь';
+      accountUserName.textContent = telegramFullName || p.username || 'Пользователь Telegram';
+      receiptNameValue.textContent = receiptName || 'Не указано';
 
-      if(p.name && !customer.name) customer.name = p.name;
-      if(p.phone && !customer.phone) customer.phone = p.phone;
-      if(p.address && !customer.address) customer.address = p.address;
+      customer.name = receiptName || customer.name;
+      customer.phone = p.phone || customer.phone;
+      customer.address = p.address || customer.address;
+
+      if(receiptName) nameInput.value = receiptName;
+      if(p.phone) phoneInput.value = String(p.phone).replace(/^\+66/, '');
+      if(p.address) addrInput.value = p.address;
 
       const spend = Number(accountState.loyalty.totalSpend || 0);
       const discount = Number(accountState.loyalty.discountPercent || 0);
@@ -941,6 +974,63 @@
       }
     }
 
+    function openNameEditor(){
+      const p = accountState.profile || {};
+      profileName.value = p.name || p.telegramFirstName || '';
+      nameEditor.classList.add('active');
+      profileName.focus();
+    }
+
+    function closeNameEditor(){
+      nameEditor.classList.remove('active');
+    }
+
+    async function saveReceiptName(){
+      const name = profileName.value.trim();
+
+      if(!name){
+        accountMessage.textContent='Введите имя для заказа и чека';
+        profileName.focus();
+        return;
+      }
+
+      const currentPhone = (accountState.profile?.phone || customer.phone || '').replace(/^\+66/, '');
+      const currentAddress = accountState.profile?.address || customer.address || '';
+
+      if(!/^\d{9}$/.test(currentPhone)){
+        accountMessage.textContent='Сначала укажите корректный номер телефона';
+        return;
+      }
+
+      if(currentAddress.trim().length < 4){
+        accountMessage.textContent='Сначала укажите адрес';
+        return;
+      }
+
+      nameEditSave.disabled = true;
+      accountMessage.textContent='Сохраняем имя...';
+
+      try{
+        const data = await apiRequest('/api/profile',{
+          method:'PUT',
+          body:JSON.stringify({
+            name,
+            phone:'+66'+currentPhone,
+            address:currentAddress.trim()
+          })
+        });
+
+        applyAccountData(data);
+        closeNameEditor();
+        accountMessage.textContent='✅ Имя сохранено';
+      }catch(error){
+        console.error('Receipt name save error:',error);
+        accountMessage.textContent='Ошибка сохранения: '+(error.message||'неизвестная ошибка');
+      }finally{
+        nameEditSave.disabled = false;
+      }
+    }
+
     async function saveProfile(){
       const name = profileName.value.trim();
       let phoneDigits = profilePhone.value.replace(/\D/g,'').slice(0,10);
@@ -978,6 +1068,7 @@
         });
 
         applyAccountData(data);
+        closeNameEditor();
 
         customer.name=name;
         customer.phone=phone;
@@ -1513,14 +1604,21 @@
     window.addEventListener('beforeunload', saveState);
     accountOpen.addEventListener('click',()=>{
       openAccountModal();
-      if(!accountState.ready){
-        accountMessage.textContent='Загружаем данные...';
-        bootstrapAccount();
-      }
+      accountMessage.textContent='Загружаем данные...';
+      bootstrapAccount();
     });
     accountClose.addEventListener('click',closeAccountModal);
     accountModal.addEventListener('click',e=>{if(e.target===accountModal) closeAccountModal();});
     profileSave.addEventListener('click',saveProfile);
+    nameEditBtn.addEventListener('click',openNameEditor);
+    nameEditCancel.addEventListener('click',closeNameEditor);
+    nameEditSave.addEventListener('click',saveReceiptName);
+    profileName.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        saveReceiptName();
+      }
+    });
     profilePhone.addEventListener('input',()=>{
       profilePhone.value=profilePhone.value.replace(/\D/g,'').slice(0,10);
     });
@@ -1538,10 +1636,9 @@
       renderAddrSummary();
       fillUIHoursOnce();
       updateTotals();
-      bootstrapAccount();
+      setTimeout(()=>bootstrapAccount(), 150);
     }
     init();
   </script>
 </body>
 </html>
-
