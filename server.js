@@ -6,47 +6,96 @@ const { Pool } = require("pg");
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
-const DATABASE_URL = process.env.DATABASE_URL || "";
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+const DATABASE_URL = String(process.env.DATABASE_URL || "").trim();
+const BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
 
 if (!DATABASE_URL) {
-  console.error(
-    "WARNING: DATABASE_URL is not set. The site will start, but database functions will be unavailable."
-  );
+  console.error("ERROR: DATABASE_URL is not set");
+  process.exit(1);
 }
 
 if (!BOT_TOKEN) {
-  console.error(
-    "WARNING: TELEGRAM_BOT_TOKEN is not set. Telegram authorization will be unavailable."
-  );
+  console.error("ERROR: TELEGRAM_BOT_TOKEN is not set");
+  process.exit(1);
 }
 
-const pool = DATABASE_URL
-  ? new Pool({
-      connectionString: DATABASE_URL,
-      ssl: DATABASE_URL.includes("railway.internal")
-        ? false
-        : { rejectUnauthorized: false },
-      connectionTimeoutMillis: 10000,
-      idleTimeoutMillis: 30000,
-      max: 10
-    })
-  : null;
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: DATABASE_URL.includes("railway.internal")
+    ? false
+    : { rejectUnauthorized: false },
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+  max: 10
+});
+
+pool.on("error", (error) => {
+  console.error("Unexpected PostgreSQL pool error:", error);
+});
 
 app.disable("x-powered-by");
-app.use(express.json({ limit: "256kb" }));
-app.use(express.urlencoded({ extended: false, limit: "256kb" }));
 
-function databaseRequired(req, res, next) {
-  if (!pool) {
-    return res.status(503).json({
-      ok: false,
-      error: "Database is not configured"
-    });
+app.use(express.json({ limit: "256kb" }));
+app.use(
+  express.urlencoded({
+    extended: false,
+    limit: "256kb"
+  })
+);
+
+/*
+ * Логи запросов.
+ * После установки этого файла в Railway Logs будут видны:
+ *
+ * [HTTP] POST /api/bootstrap
+ * [HTTP] PUT /api/profile
+ * [HTTP] PUT /api/profile -> 200 (25 ms)
+ */
+app.use((req, res, next) => {
+  const shouldLog =
+    req.path === "/" ||
+    req.path === "/health" ||
+    req.path.startsWith("/api/");
+
+  if (!shouldLog) {
+    return next();
+  }
+
+  const startedAt = Date.now();
+
+  console.log(`[HTTP] ${req.method} ${req.originalUrl}`);
+
+  res.on("finish", () => {
+    const duration = Date.now() - startedAt;
+
+    console.log(
+      `[HTTP] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration} ms)`
+    );
+  });
+
+  next();
+});
+
+/*
+ * Не кэшируем HTML и API.
+ * Это важно для Telegram Mini App, чтобы не открывался старый index.html.
+ */
+app.use((req, res, next) => {
+  if (
+    req.path === "/" ||
+    req.path.endsWith(".html") ||
+    req.path.startsWith("/api/")
+  ) {
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
   }
 
   next();
-}
+});
 
 function discountBySpend(totalSpend) {
   const spend = Number(totalSpend || 0);
@@ -60,10 +109,6 @@ function discountBySpend(totalSpend) {
 }
 
 function validateTelegramInitData(initData) {
-  if (!BOT_TOKEN) {
-    throw new Error("Telegram bot token is not configured");
-  }
-
   if (!initData || typeof initData !== "string") {
     throw new Error("Telegram initData is missing");
   }
@@ -112,10 +157,14 @@ function validateTelegramInitData(initData) {
   const authDate = Number(params.get("auth_date") || 0);
   const currentTime = Math.floor(Date.now() / 1000);
 
+  /*
+   * Telegram initData действует 24 часа.
+   * Также запрещаем дату более чем на 5 минут из будущего.
+   */
   if (
     !authDate ||
     currentTime - authDate > 24 * 60 * 60 ||
-    authDate > currentTime + 300
+    authDate > currentTime + 5 * 60
   ) {
     throw new Error("Telegram authorization expired");
   }
@@ -146,12 +195,16 @@ function telegramAuth(req, res, next) {
     const initData =
       req.get("X-Telegram-Init-Data") ||
       req.body?.initData ||
-      req.query?.initData ||
       "";
 
     req.telegramUser = validateTelegramInitData(initData);
-    next();
+
+    return next();
   } catch (error) {
+    console.error(
+      `[AUTH] ${req.method} ${req.originalUrl}: ${error.message}`
+    );
+
     return res.status(401).json({
       ok: false,
       error: error.message
@@ -160,8 +213,6 @@ function telegramAuth(req, res, next) {
 }
 
 async function ensureSchema() {
-  if (!pool) return;
-
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       telegram_id BIGINT PRIMARY KEY,
@@ -178,17 +229,40 @@ async function ensureSchema() {
       last_site_visit_at TIMESTAMPTZ
     );
 
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_first_name TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_last_name TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_name TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS last_bot_activity_at TIMESTAMPTZ;
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS last_site_visit_at TIMESTAMPTZ;
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS username TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS telegram_first_name TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS telegram_last_name TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS profile_name TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS phone TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS address TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS created_at
+      TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS updated_at
+      TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS last_bot_activity_at TIMESTAMPTZ;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS last_site_visit_at TIMESTAMPTZ;
 
     CREATE TABLE IF NOT EXISTS visits (
       id BIGSERIAL PRIMARY KEY,
@@ -198,11 +272,6 @@ async function ensureSchema() {
       user_agent TEXT
     );
 
-    ALTER TABLE visits ADD COLUMN IF NOT EXISTS telegram_id BIGINT;
-    ALTER TABLE visits ADD COLUMN IF NOT EXISTS visited_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-    ALTER TABLE visits ADD COLUMN IF NOT EXISTS session_key TEXT;
-    ALTER TABLE visits ADD COLUMN IF NOT EXISTS user_agent TEXT;
-
     CREATE INDEX IF NOT EXISTS idx_visits_visited_at
       ON visits(visited_at);
 
@@ -211,7 +280,9 @@ async function ensureSchema() {
 
     CREATE TABLE IF NOT EXISTS orders (
       id BIGSERIAL PRIMARY KEY,
-      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id) ON DELETE RESTRICT,
+      telegram_id BIGINT NOT NULL
+        REFERENCES users(telegram_id)
+        ON DELETE RESTRICT,
       source TEXT NOT NULL DEFAULT 'mini_app',
       customer_name TEXT,
       phone TEXT,
@@ -231,25 +302,6 @@ async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS telegram_id BIGINT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'mini_app';
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_name TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS phone TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS address TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS address_plain TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_fee INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS items_total INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_percent INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS total INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_when TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_date DATE;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_time TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS comment TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'created';
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
     CREATE INDEX IF NOT EXISTS idx_orders_created_at
       ON orders(created_at);
 
@@ -258,18 +310,14 @@ async function ensureSchema() {
 
     CREATE TABLE IF NOT EXISTS order_items (
       id BIGSERIAL PRIMARY KEY,
-      order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+      order_id BIGINT NOT NULL
+        REFERENCES orders(id)
+        ON DELETE CASCADE,
       item_name TEXT NOT NULL,
       quantity INTEGER NOT NULL,
       unit_price INTEGER NOT NULL,
       image_url TEXT
     );
-
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS order_id BIGINT;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS item_name TEXT;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS quantity INTEGER;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS unit_price INTEGER;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS image_url TEXT;
 
     CREATE INDEX IF NOT EXISTS idx_order_items_order_id
       ON order_items(order_id);
@@ -289,7 +337,16 @@ async function upsertTelegramUser(user) {
         updated_at,
         last_site_visit_at
       )
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), NOW())
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        NOW(),
+        NOW(),
+        NOW()
+      )
       ON CONFLICT (telegram_id)
       DO UPDATE SET
         username = EXCLUDED.username,
@@ -301,7 +358,7 @@ async function upsertTelegramUser(user) {
       RETURNING *
     `,
     [
-      user.id,
+      String(user.id),
       user.username || null,
       user.first_name || null,
       user.last_name || null,
@@ -317,6 +374,7 @@ async function getAccountData(telegramId) {
     `
       SELECT
         u.*,
+
         COALESCE(
           (
             SELECT SUM(o.total)
@@ -326,6 +384,7 @@ async function getAccountData(telegramId) {
           ),
           0
         )::int AS total_spend,
+
         COALESCE(
           (
             SELECT COUNT(*)
@@ -335,10 +394,11 @@ async function getAccountData(telegramId) {
           ),
           0
         )::int AS orders_count
+
       FROM users u
       WHERE u.telegram_id = $1
     `,
-    [telegramId]
+    [String(telegramId)]
   );
 
   const user = userResult.rows[0];
@@ -362,6 +422,7 @@ async function getAccountData(telegramId) {
         o.phone,
         o.address_plain,
         o.address,
+
         COALESCE(
           json_agg(
             json_build_object(
@@ -374,16 +435,20 @@ async function getAccountData(telegramId) {
           ) FILTER (WHERE oi.id IS NOT NULL),
           '[]'::json
         ) AS items
+
       FROM orders o
+
       LEFT JOIN order_items oi
         ON oi.order_id = o.id
+
       WHERE o.telegram_id = $1
         AND COALESCE(o.status, 'created') <> 'cancelled'
+
       GROUP BY o.id
       ORDER BY o.created_at DESC
       LIMIT 30
     `,
-    [telegramId]
+    [String(telegramId)]
   );
 
   const totalSpend = Number(user.total_spend || 0);
@@ -394,7 +459,10 @@ async function getAccountData(telegramId) {
       username: user.username || "",
       telegramFirstName: user.telegram_first_name || "",
       telegramLastName: user.telegram_last_name || "",
-      name: user.profile_name || user.telegram_first_name || "",
+      name:
+        user.profile_name ||
+        user.telegram_first_name ||
+        "",
       phone: user.phone || "",
       address: user.address || "",
       photoUrl: user.photo_url || ""
@@ -410,191 +478,290 @@ async function getAccountData(telegramId) {
   };
 }
 
-app.get("/health", (req, res) => {
-  return res.status(200).json({
-    ok: true,
-    service: "Smoke Factory BBQ Mini App",
-    databaseConfigured: Boolean(DATABASE_URL),
-    telegramTokenConfigured: Boolean(BOT_TOKEN)
-  });
-});
-
-app.post(
-  "/api/bootstrap",
-  databaseRequired,
-  telegramAuth,
-  async (req, res) => {
-    try {
-      const user = await upsertTelegramUser(req.telegramUser);
-
-      await pool.query(
-        `
-          INSERT INTO visits (
-            telegram_id,
-            session_key,
-            user_agent
-          )
-          VALUES ($1, $2, $3)
-        `,
-        [
-          user.telegram_id,
-          String(req.body?.sessionKey || "").slice(0, 120) || null,
-          String(req.get("user-agent") || "").slice(0, 500) || null
-        ]
-      );
-
-      const data = await getAccountData(user.telegram_id);
-
-      return res.json({
-        ok: true,
-        ...data
-      });
-    } catch (error) {
-      console.error("POST /api/bootstrap:", error);
-
-      return res.status(500).json({
-        ok: false,
-        error: "Database error"
-      });
-    }
-  }
-);
-
-app.put(
-  "/api/profile",
-  databaseRequired,
-  telegramAuth,
-  async (req, res) => {
-    try {
-      await upsertTelegramUser(req.telegramUser);
-
-      const name = String(req.body?.name || "")
-        .trim()
-        .slice(0, 120);
-
-      const phone = String(req.body?.phone || "")
-        .replace(/\s+/g, "")
-        .trim()
-        .slice(0, 30);
-
-      const address = String(req.body?.address || "")
-        .trim()
-        .slice(0, 500);
-
-      if (!name) {
-        return res.status(400).json({
-          ok: false,
-          error: "Введите имя"
-        });
-      }
-
-      if (!/^\+66\d{9,10}$/.test(phone)) {
-        return res.status(400).json({
-          ok: false,
-          error: "Проверьте номер телефона. Формат: +66XXXXXXXXX"
-        });
-      }
-
-      if (address.length < 4) {
-        return res.status(400).json({
-          ok: false,
-          error: "Введите адрес"
-        });
-      }
-
-      await pool.query(
-        `
-          UPDATE users
-          SET
-            profile_name = $2,
-            phone = $3,
-            address = $4,
-            updated_at = NOW()
-          WHERE telegram_id = $1
-        `,
-        [
-          req.telegramUser.id,
-          name,
-          phone,
-          address
-        ]
-      );
-
-      const data = await getAccountData(req.telegramUser.id);
-
-      return res.json({
-        ok: true,
-        ...data
-      });
-    } catch (error) {
-      console.error("PUT /api/profile:", error);
-
-      return res.status(500).json({
-        ok: false,
-        error: "Database error"
-      });
-    }
-  }
-);
-
-app.get(
-  "/api/account",
-  databaseRequired,
-  telegramAuth,
-  async (req, res) => {
-    try {
-      await upsertTelegramUser(req.telegramUser);
-
-      const data = await getAccountData(req.telegramUser.id);
-
-      return res.json({
-        ok: true,
-        ...data
-      });
-    } catch (error) {
-      console.error("GET /api/account:", error);
-
-      return res.status(500).json({
-        ok: false,
-        error: "Database error"
-      });
-    }
-  }
-);
-
-app.use(
-  express.static(__dirname, {
-    extensions: ["html"],
-    index: "index.html"
-  })
-);
-
-app.get("*", (req, res) => {
-  return res.sendFile(path.join(__dirname, "index.html"));
-});
-
-const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Smoke Factory Mini App started on port ${PORT}`);
-});
-
-server.on("error", (error) => {
-  console.error("HTTP server error:", error);
-});
-
-async function initializeDatabase() {
-  if (!pool) {
-    return;
-  }
-
+/*
+ * Проверка сервера и базы:
+ * https://ВАШ-ДОМЕН.up.railway.app/health
+ */
+app.get("/health", async (req, res) => {
   try {
-    await ensureSchema();
-    console.log("Database connected, schema ready");
+    await pool.query("SELECT 1");
+
+    return res.status(200).json({
+      ok: true,
+      service: "Smoke Factory BBQ Mini App",
+      database: "connected",
+      telegramTokenConfigured: Boolean(BOT_TOKEN)
+    });
   } catch (error) {
-    console.error("Database initialization failed:", error);
+    console.error("GET /health:", error);
+
+    return res.status(503).json({
+      ok: false,
+      service: "Smoke Factory BBQ Mini App",
+      database: "disconnected"
+    });
+  }
+});
+
+/*
+ * Вызывается при открытии Mini App.
+ * Создаёт или обновляет Telegram-пользователя и загружает его профиль.
+ */
+app.post("/api/bootstrap", telegramAuth, async (req, res) => {
+  try {
+    const user = await upsertTelegramUser(req.telegramUser);
+
+    const sessionKey =
+      String(req.body?.sessionKey || "")
+        .trim()
+        .slice(0, 120) || null;
+
+    const userAgent =
+      String(req.get("user-agent") || "")
+        .trim()
+        .slice(0, 500) || null;
+
+    await pool.query(
+      `
+        INSERT INTO visits (
+          telegram_id,
+          session_key,
+          user_agent
+        )
+        VALUES ($1, $2, $3)
+      `,
+      [
+        String(user.telegram_id),
+        sessionKey,
+        userAgent
+      ]
+    );
+
+    const data = await getAccountData(user.telegram_id);
+
+    console.log(
+      `[ACCOUNT] Bootstrap completed for Telegram ID ${user.telegram_id}`
+    );
+
+    return res.json({
+      ok: true,
+      ...data
+    });
+  } catch (error) {
+    console.error("POST /api/bootstrap:", error);
+
+    return res.status(500).json({
+      ok: false,
+      error: "Database error"
+    });
+  }
+});
+
+async function saveProfileHandler(req, res) {
+  try {
+    await upsertTelegramUser(req.telegramUser);
+
+    const telegramId = String(req.telegramUser.id);
+
+    const name = String(req.body?.name || "")
+      .trim()
+      .slice(0, 120);
+
+    const phone = String(req.body?.phone || "")
+      .replace(/[\s()-]/g, "")
+      .trim()
+      .slice(0, 30);
+
+    const address = String(req.body?.address || "")
+      .trim()
+      .slice(0, 500);
+
+    if (!name) {
+      return res.status(400).json({
+        ok: false,
+        error: "Введите имя"
+      });
+    }
+
+    if (!/^\+66\d{9,10}$/.test(phone)) {
+      return res.status(400).json({
+        ok: false,
+        error: "Проверьте номер телефона. Формат: +66XXXXXXXXX"
+      });
+    }
+
+    if (address.length < 4) {
+      return res.status(400).json({
+        ok: false,
+        error: "Введите адрес"
+      });
+    }
+
+    const updateResult = await pool.query(
+      `
+        UPDATE users
+        SET
+          profile_name = $2,
+          phone = $3,
+          address = $4,
+          updated_at = NOW()
+        WHERE telegram_id = $1
+        RETURNING telegram_id, profile_name, phone, address, updated_at
+      `,
+      [
+        telegramId,
+        name,
+        phone,
+        address
+      ]
+    );
+
+    if (updateResult.rowCount !== 1) {
+      throw new Error("User profile was not updated");
+    }
+
+    const data = await getAccountData(telegramId);
+
+    console.log(
+      `[PROFILE] Saved successfully for Telegram ID ${telegramId}`
+    );
+
+    return res.json({
+      ok: true,
+      ...data
+    });
+  } catch (error) {
+    console.error(
+      `${req.method} /api/profile:`,
+      error
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Database error"
+    });
   }
 }
 
-initializeDatabase();
+/*
+ * Текущий index.html использует PUT.
+ * POST также оставлен для совместимости.
+ */
+app.put("/api/profile", telegramAuth, saveProfileHandler);
+app.post("/api/profile", telegramAuth, saveProfileHandler);
+
+/*
+ * Повторная загрузка данных личного кабинета.
+ */
+app.get("/api/account", telegramAuth, async (req, res) => {
+  try {
+    await upsertTelegramUser(req.telegramUser);
+
+    const data = await getAccountData(req.telegramUser.id);
+
+    return res.json({
+      ok: true,
+      ...data
+    });
+  } catch (error) {
+    console.error("GET /api/account:", error);
+
+    return res.status(500).json({
+      ok: false,
+      error: "Database error"
+    });
+  }
+});
+
+/*
+ * Неизвестные API-маршруты должны возвращать JSON,
+ * а не содержимое index.html.
+ */
+app.use("/api", (req, res) => {
+  return res.status(404).json({
+    ok: false,
+    error: `API route not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
+/*
+ * Структура проекта:
+ *
+ * server.js
+ * index.html
+ * images/
+ * package.json
+ */
+app.use(
+  express.static(__dirname, {
+    extensions: ["html"],
+    index: "index.html",
+    etag: true,
+    maxAge: "1h"
+  })
+);
+
+/*
+ * Все остальные страницы открывают index.html.
+ */
+app.get("*", (req, res) => {
+  return res.sendFile(path.join(__dirname, "index.html"), {
+    headers: {
+      "Cache-Control":
+        "no-store, no-cache, must-revalidate, proxy-revalidate"
+    }
+  });
+});
+
+let server;
+
+async function startServer() {
+  try {
+    await pool.query("SELECT 1");
+    await ensureSchema();
+
+    console.log("Database connected, schema ready");
+
+    server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Smoke Factory Mini App started on port ${PORT}`);
+    });
+
+    server.on("error", (error) => {
+      console.error("HTTP server error:", error);
+    });
+  } catch (error) {
+    console.error("Database initialization failed:", error);
+    process.exit(1);
+  }
+}
+
+async function shutdown(signal) {
+  console.log(`${signal} received. Shutting down...`);
+
+  try {
+    if (server) {
+      await new Promise((resolve) => {
+        server.close(resolve);
+      });
+    }
+
+    await pool.end();
+
+    console.log("Server stopped");
+    process.exit(0);
+  } catch (error) {
+    console.error("Shutdown error:", error);
+    process.exit(1);
+  }
+}
+
+process.on("SIGTERM", () => {
+  shutdown("SIGTERM");
+});
+
+process.on("SIGINT", () => {
+  shutdown("SIGINT");
+});
 
 process.on("unhandledRejection", (error) => {
   console.error("Unhandled promise rejection:", error);
@@ -603,3 +770,5 @@ process.on("unhandledRejection", (error) => {
 process.on("uncaughtException", (error) => {
   console.error("Uncaught exception:", error);
 });
+
+startServer();
