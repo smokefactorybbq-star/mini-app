@@ -3,6 +3,8 @@ const express = require("express");
 const path = require("path");
 const { Pool } = require("pg");
 
+console.log("server.js loaded");
+
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
@@ -704,7 +706,11 @@ app.use(
 /*
  * Все остальные страницы открывают index.html.
  */
-app.get("*", (req, res) => {
+app.use((req, res, next) => {
+  if (req.method !== "GET") {
+    return next();
+  }
+
   return res.sendFile(path.join(__dirname, "index.html"), {
     headers: {
       "Cache-Control":
