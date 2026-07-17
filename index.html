@@ -300,7 +300,7 @@
     <div class="modal-content account-modal-content" role="dialog" aria-modal="true" aria-labelledby="account-title">
       <div class="modal-header">
         <strong id="account-title">Личный кабинет</strong>
-        <button class="btn" id="account-close" aria-label="Закрыть">×</button>
+        <button class="btn" id="account-close" type="button" aria-label="Закрыть">×</button>
       </div>
       <div class="modal-body">
         <div class="account-top">
@@ -333,7 +333,7 @@
           </div>
           <textarea class="input full" id="profile-address" rows="3" placeholder="Адрес"></textarea>
         </div>
-        <button class="btn btn-primary" id="profile-save">Сохранить данные</button>
+        <button class="btn btn-primary" id="profile-save" type="button">Сохранить данные</button>
         <div class="account-message" id="account-message"></div>
 
         <div class="history-title">История заказов</div>
@@ -438,16 +438,31 @@
   </div>
 
   <script>
-    // Безопасная инициализация Telegram WebApp
+    /* ==== Telegram WebApp ==== */
+    const APP_VERSION = '2026-07-18-profile-fix-2';
+    const telegramWebApp = window.Telegram?.WebApp || null;
+
+    console.log('[SFB] index.html loaded:', APP_VERSION);
+
     try {
-      if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
-        try { Telegram.WebApp.MainButton.hide(); } catch(e){}
+      if (telegramWebApp) {
+        telegramWebApp.ready();
+        telegramWebApp.expand();
+        try { telegramWebApp.MainButton.hide(); } catch (_) {}
+        try { telegramWebApp.setHeaderColor('#ffffff'); } catch (_) {}
+        try { telegramWebApp.setBackgroundColor('#ffffff'); } catch (_) {}
       }
-    } catch (e) {
-      console.warn("Telegram WebApp not available, running in browser mode");
+    } catch (error) {
+      console.warn('[SFB] Telegram initialization error:', error);
     }
+
+    window.addEventListener('error', event => {
+      console.error('[SFB] Global JavaScript error:', event.message, event.filename, event.lineno);
+    });
+
+    window.addEventListener('unhandledrejection', event => {
+      console.error('[SFB] Unhandled promise rejection:', event.reason);
+    });
 
     /* ==== Categories ==== */
     const CATEGORIES = {
@@ -843,17 +858,102 @@
 
 
     function telegramInitData(){
-      try { return (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) || ''; }
-      catch(_){ return ''; }
+      try {
+        const sdkData = String(window.Telegram?.WebApp?.initData || '').trim();
+        if(sdkData) return sdkData;
+
+        // Резервное чтение параметра запуска Telegram из URL.
+        const query = new URLSearchParams(window.location.search);
+        const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        return String(query.get('tgWebAppData') || hash.get('tgWebAppData') || '').trim();
+      } catch(error) {
+        console.warn('[SFB] Cannot read Telegram initData:', error);
+        return '';
+      }
+    }
+
+    function telegramClientUser(){
+      try {
+        return window.Telegram?.WebApp?.initDataUnsafe?.user || null;
+      } catch(_) {
+        return null;
+      }
+    }
+
+    function applyTelegramClientUser(){
+      const user = telegramClientUser();
+      if(!user) return;
+
+      const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+      accountUserName.textContent = fullName || user.username || 'Пользователь Telegram';
+
+      if(user.photo_url){
+        accountAvatar.src = user.photo_url;
+      }
+
+      if(!profileName.value && user.first_name){
+        profileName.value = user.first_name;
+        receiptNameValue.textContent = user.first_name;
+        customer.name = user.first_name;
+        nameInput.value = user.first_name;
+      }
+    }
+
+    async function waitForTelegramInitData(timeoutMs=8000){
+      const startedAt = Date.now();
+
+      while(Date.now() - startedAt < timeoutMs){
+        const initData = telegramInitData();
+        if(initData) return initData;
+
+        try { window.Telegram?.WebApp?.ready(); } catch(_) {}
+        await new Promise(resolve => setTimeout(resolve, 120));
+      }
+
+      throw new Error(
+        'Telegram не передал данные авторизации. Закройте страницу, отправьте боту /start и откройте меню новой кнопкой.'
+      );
     }
 
     async function apiRequest(url, options={}){
-      const initData = telegramInitData();
-      if(!initData) throw new Error('Откройте меню внутри Telegram');
-      const headers = Object.assign({'Content-Type':'application/json','X-Telegram-Init-Data':initData}, options.headers||{});
-      const response = await fetch(url, Object.assign({}, options, {headers}));
-      const data = await response.json().catch(()=>({ok:false,error:'Ошибка ответа сервера'}));
-      if(!response.ok || !data.ok) throw new Error(data.error || 'Ошибка сервера');
+      const initData = await waitForTelegramInitData();
+      const headers = Object.assign(
+        {
+          'Content-Type':'application/json',
+          'Accept':'application/json',
+          'X-Telegram-Init-Data':initData
+        },
+        options.headers || {}
+      );
+
+      console.log(`[SFB API] ${options.method || 'GET'} ${url}`);
+
+      let response;
+      try {
+        response = await fetch(url, Object.assign({}, options, {
+          headers,
+          cache:'no-store'
+        }));
+      } catch(error) {
+        throw new Error('Сервер недоступен. Проверьте интернет и адрес Mini App.');
+      }
+
+      const rawText = await response.text();
+      let data = {};
+
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch(_) {
+        console.error('[SFB API] Non-JSON response:', rawText.slice(0, 500));
+        throw new Error(`Сервер вернул неверный ответ (${response.status})`);
+      }
+
+      console.log(`[SFB API] ${url} -> ${response.status}`, data);
+
+      if(!response.ok || data.ok === false){
+        throw new Error(data.error || `Ошибка сервера ${response.status}`);
+      }
+
       return data;
     }
 
@@ -963,15 +1063,35 @@
       submitOrder();
     }
 
-    async function bootstrapAccount(){
-      try{
-        const sessionKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        const data = await apiRequest('/api/bootstrap',{method:'POST',body:JSON.stringify({sessionKey})});
-        applyAccountData(data);
-      }catch(error){
-        console.warn('Account bootstrap:',error.message);
-        accountMessage.textContent=error.message;
-      }
+    let bootstrapPromise = null;
+
+    async function bootstrapAccount(force=false){
+      if(accountState.ready && !force) return accountState;
+      if(bootstrapPromise && !force) return bootstrapPromise;
+
+      applyTelegramClientUser();
+
+      bootstrapPromise = (async()=>{
+        try{
+          accountMessage.textContent='Подключаем личный кабинет...';
+          const sessionKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          const data = await apiRequest('/api/bootstrap',{
+            method:'POST',
+            body:JSON.stringify({sessionKey, appVersion:APP_VERSION})
+          });
+          applyAccountData(data);
+          accountMessage.textContent='';
+          return data;
+        }catch(error){
+          console.warn('[SFB] Account bootstrap:',error);
+          accountMessage.textContent=error.message || 'Не удалось загрузить личный кабинет';
+          throw error;
+        }finally{
+          bootstrapPromise = null;
+        }
+      })();
+
+      return bootstrapPromise;
     }
 
     function openNameEditor(){
@@ -1604,8 +1724,13 @@
     window.addEventListener('beforeunload', saveState);
     accountOpen.addEventListener('click',()=>{
       openAccountModal();
-      accountMessage.textContent='Загружаем данные...';
-      bootstrapAccount();
+      applyTelegramClientUser();
+      if(!accountState.ready){
+        accountMessage.textContent='Загружаем данные...';
+        bootstrapAccount().catch(()=>{});
+      }else{
+        accountMessage.textContent='';
+      }
     });
     accountClose.addEventListener('click',closeAccountModal);
     accountModal.addEventListener('click',e=>{if(e.target===accountModal) closeAccountModal();});
@@ -1629,14 +1754,21 @@
 
     function fillUIHoursOnce(){ fillHours(); hourSelect.value=orderState.hour; minuteSelect.value=orderState.minute; }
 
-    function init(){
+    async function init(){
       loadState();
       setLanguage(language);
       renderCats(); renderMenu(); renderCartItems();
       renderAddrSummary();
       fillUIHoursOnce();
       updateTotals();
-      setTimeout(()=>bootstrapAccount(), 150);
+      applyTelegramClientUser();
+
+      // Даём Telegram SDK завершить инициализацию, затем загружаем профиль.
+      setTimeout(()=>{
+        bootstrapAccount().catch(error=>{
+          console.warn('[SFB] Initial bootstrap skipped:', error.message);
+        });
+      }, 350);
     }
     init();
   </script>
