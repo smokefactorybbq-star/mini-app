@@ -1,6 +1,6 @@
 {
   "name": "smoke-factory-mini-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Telegram Mini App for Smoke Factory BBQ",
   "private": true,
   "main": "server.js",
@@ -11,6 +11,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "express": "4.21.2"
+    "express": "4.21.2",
+    "pg": "8.13.1"
   }
 }
