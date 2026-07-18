@@ -969,7 +969,7 @@ app.use(
 /*
  * Все остальные страницы открывают index.html.
  */
-app.get("*", (req, res) => {
+app.use((req, res) => {
   return res.sendFile(path.join(__dirname, "index.html"), {
     headers: {
       "Cache-Control":
