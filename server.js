@@ -572,7 +572,7 @@ async function getAccountData(telegramId) {
  * https://ВАШ-ДОМЕН.up.railway.app/health
  */
 
-app.post("/api/loyalty/settle", async (req, res) => {
+async function loyaltySettleHandler(req, res) {
   const client = await pool.connect();
 
   try {
@@ -732,7 +732,16 @@ app.post("/api/loyalty/settle", async (req, res) => {
   } finally {
     client.release();
   }
-});
+}
+
+
+/*
+ * Основной адрес используется ботом.
+ * Дополнительный адрес оставлен для Railway/Express-конфигураций,
+ * где внешний префикс /api может быть удалён до маршрутизации.
+ */
+app.post("/api/loyalty/settle", loyaltySettleHandler);
+app.post("/loyalty/settle", loyaltySettleHandler);
 
 app.get("/health", async (req, res) => {
   try {
@@ -930,6 +939,10 @@ app.get("/api/account", telegramAuth, async (req, res) => {
  * а не содержимое index.html.
  */
 app.use("/api", (req, res) => {
+  console.warn(
+    `[API 404] method=${req.method} originalUrl=${req.originalUrl} url=${req.url}`
+  );
+
   return res.status(404).json({
     ok: false,
     error: `API route not found: ${req.method} ${req.originalUrl}`
