@@ -76,6 +76,12 @@
     .qty-btn{border:none;background:#fff;width:28px;height:28px;cursor:pointer}
     .qty-display{padding:0 10px}
     .totals-section{margin-top:8px;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+    .bonus-box{border:1px solid var(--border);border-radius:14px;padding:12px;background:#f8fafc;display:flex;flex-direction:column;gap:8px}
+    .bonus-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    .bonus-apply{padding:10px 12px;border:0;border-radius:10px;background:#111827;color:#fff;font-weight:800;cursor:pointer}
+    .bonus-hint{font-size:12px;color:var(--muted)}
+    .loyalty-balance{margin-top:9px;font-size:17px;font-weight:900}
+    .loyalty-note{margin-top:5px;font-size:12px;color:var(--muted);font-style:italic;line-height:1.35}
     .checkout-btn{margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:12px;font-weight:800;cursor:pointer;width:100%}
     .checkout-btn:disabled{background:#d1d5db;color:#6b7280;cursor:not-allowed}
     .remove-btn{background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px}
@@ -237,6 +243,15 @@
         <div><span class="address-link" id="open-address">Specify address</span></div>
         <div class="summary-text" id="addr-summary" style="display:none"></div>
 
+        <div class="bonus-box">
+          <strong id="bonus-title">Использовать бонусные баты</strong>
+          <div class="bonus-row">
+            <input class="input" id="bonus-input" type="number" min="0" step="1" value="0" inputmode="numeric">
+            <button class="bonus-apply" id="bonus-apply" type="button">Применить</button>
+          </div>
+          <div class="bonus-hint" id="bonus-hint">Доступно: 0 ฿. Максимум к списанию: 0 ฿.</div>
+        </div>
+
         <div class="totals-section">
           <div class="summary-text" id="delivery-cost-row">
             Delivery cost: <span id="delivery-fee">0</span> ฿
@@ -322,7 +337,9 @@
             <div><strong id="loyalty-sum">0 / 20 000 ฿</strong></div>
             <div class="loyalty-track"><div class="loyalty-fill" id="loyalty-fill"></div></div>
             <div class="loyalty-labels"><span>0</span><span>5 000</span><span>10 000</span><span>15 000</span><span>20 000</span></div>
-            <div style="margin-top:8px"><strong id="loyalty-level">Скидка: 0%</strong></div>
+            <div style="margin-top:8px"><strong id="loyalty-level">Уровень кэшбэка: 0%</strong></div>
+            <div class="loyalty-balance" id="loyalty-balance">Баланс: 0 ฿</div>
+            <div class="loyalty-note" id="loyalty-note">Максимальный процент списания бонусных батов на оплату покупки составляет 20%.</div>
           </div>
         </div>
 
@@ -611,7 +628,9 @@
     const cart = {};
     const customer = { address:"", name:"", phone:"", location:null };
     const orderState = { when:"asap", hour:"10", minute:"00", comment:"" };
-    const accountState = { ready:false, profile:null, loyalty:{totalSpend:0,discountPercent:0,ordersCount:0}, orders:[] };
+    const accountState = { ready:false, profile:null, loyalty:{totalSpend:0,cashbackPercent:0,balance:0,maxRedeemPercent:20,ordersCount:0}, orders:[] };
+    let bonusApplied = 0;
+    let bonusTouched = false;
     let deliveryFee = 0;
 
     let payloadPendingForClose = null;
@@ -656,6 +675,10 @@
     const grandTotalRow=document.getElementById('grand-total-row');
     const discountRow = document.getElementById('discount-row');
     const discountAmountEl = document.getElementById('discount-amount');
+    const bonusInput = document.getElementById('bonus-input');
+    const bonusApply = document.getElementById('bonus-apply');
+    const bonusHint = document.getElementById('bonus-hint');
+    const bonusTitle = document.getElementById('bonus-title');
 
     const checkoutBtn=document.getElementById('checkout-btn');
     const districtLabel=document.getElementById('district-label');
@@ -679,6 +702,8 @@
     const loyaltySum=document.getElementById('loyalty-sum');
     const loyaltyFill=document.getElementById('loyalty-fill');
     const loyaltyLevel=document.getElementById('loyalty-level');
+    const loyaltyBalance=document.getElementById('loyalty-balance');
+    const loyaltyNote=document.getElementById('loyalty-note');
     const profileName=document.getElementById('profile-name');
     const profilePhone=document.getElementById('profile-phone');
     const profileAddress=document.getElementById('profile-address');
@@ -764,21 +789,67 @@
       deliveryFeeEl.textContent = deliveryFee;
     }
 
+    function getBonusBalance(){
+      return Math.max(
+        0,
+        Number(
+          accountState.loyalty.balance ??
+          accountState.loyalty.bonusBalance ??
+          0
+        )
+      );
+    }
+
+    function getMaxBonusForCart(){
+      return Math.min(
+        getBonusBalance(),
+        Math.floor(itemsTotal() * 0.20)
+      );
+    }
+
+    function normalizeBonusInput(){
+      const maxBonus = getMaxBonusForCart();
+      let requested = Math.floor(Number(bonusInput.value || 0));
+
+      if(!Number.isFinite(requested) || requested < 0) requested = 0;
+      requested = Math.min(requested, maxBonus);
+
+      bonusApplied = requested;
+      bonusInput.value = String(requested);
+
+      return requested;
+    }
+
     function updateTotals() {
       const baseItems = itemsTotal();
 
       updateDeliveryFee();
       const effectiveDelivery = deliveryFee;
-
       itemsTotalEl.textContent = baseItems;
 
-      const discountPercent = Number(accountState.loyalty.discountPercent || 0);
-      const discountAmount = Math.floor(baseItems * discountPercent / 100);
-      if (discountRow) discountRow.style.display = discountAmount > 0 ? '' : 'none';
-      if (discountAmountEl) discountAmountEl.textContent = discountAmount;
+      const maxBonus = getMaxBonusForCart();
+
+      if(!bonusTouched){
+        bonusApplied = maxBonus;
+        bonusInput.value = String(maxBonus);
+      }else{
+        bonusApplied = Math.min(
+          Math.max(0, Math.floor(Number(bonusApplied || 0))),
+          maxBonus
+        );
+        bonusInput.value = String(bonusApplied);
+      }
+
+      if(discountRow) discountRow.style.display = bonusApplied > 0 ? '' : 'none';
+      if(discountAmountEl) discountAmountEl.textContent = bonusApplied;
+
+      const balance = getBonusBalance();
+      bonusHint.textContent =
+        `Доступно: ${balance.toLocaleString('ru-RU')} ฿. ` +
+        `Максимум к списанию: ${maxBonus.toLocaleString('ru-RU')} ฿.`;
 
       deliveryFeeEl.textContent = effectiveDelivery;
-      const grand = baseItems - discountAmount + effectiveDelivery;
+      const grand = Math.max(0, baseItems - bonusApplied + effectiveDelivery);
       grandTotalEl.textContent = grand;
 
       const progress = Math.min(5000, baseItems);
@@ -911,7 +982,7 @@
     function applyAccountData(data){
       accountState.ready = true;
       accountState.profile = data.profile || {};
-      accountState.loyalty = data.loyalty || {totalSpend:0,discountPercent:0,ordersCount:0};
+      accountState.loyalty = data.loyalty || {totalSpend:0,cashbackPercent:0,balance:0,maxRedeemPercent:20,ordersCount:0};
       accountState.orders = data.orders || [];
 
       const p = accountState.profile;
@@ -933,11 +1004,18 @@
       if(p.phone) phoneInput.value = String(p.phone).replace(/^\+66/, '');
       if(p.address) addrInput.value = p.address;
 
-      const spend = Number(accountState.loyalty.totalSpend || 0);
-      const discount = Number(accountState.loyalty.discountPercent || 0);
+      const spend = Number(accountState.loyalty.totalSpend || accountState.loyalty.lifetimeSpend || 0);
+      const cashback = Number(accountState.loyalty.cashbackPercent ?? accountState.loyalty.discountPercent ?? 0);
+      const balance = Math.max(0, Number(accountState.loyalty.balance ?? accountState.loyalty.bonusBalance ?? 0));
       loyaltySum.textContent = `${spend.toLocaleString('ru-RU')} / 20 000 ฿`;
       loyaltyFill.style.width = `${Math.min(100, spend/20000*100)}%`;
-      loyaltyLevel.textContent = `Уровень скидки: ${discount}%`;
+      loyaltyLevel.textContent = `Уровень кэшбэка: ${cashback}%`;
+      loyaltyBalance.textContent = `Баланс: ${balance.toLocaleString('ru-RU')} ฿`;
+      loyaltyNote.textContent = 'Максимальный процент списания бонусных батов на оплату покупки составляет 20%.';
+      if(!bonusTouched){
+        bonusApplied = Math.min(balance, Math.floor(itemsTotal() * 0.20));
+        bonusInput.value = String(bonusApplied);
+      }
       renderOrderHistory();
       renderAddrSummary();
       updateTotals();
@@ -1567,7 +1645,7 @@
 
       lines.push(`Сумма блюд: ${baseItemsTotal} ฿`);
       lines.push(`Доставка: ${payload.delivery} ฿`);
-      if (payload.discountAmount) lines.push(`Скидка ${payload.discountPercent}%: -${payload.discountAmount} ฿`);
+      if (payload.bonusRequested) lines.push(`Использовано бонусов: -${payload.bonusRequested} ฿`);
       lines.push(`Итого: ${payload.total} ฿`);
       lines.push(`Оплата: ${payload.payMethod}`);
       lines.push(`Телефон: ${payload.phone}`);
@@ -1632,10 +1710,16 @@
         commentLine: comment ? `Комментарий: ${comment}` : '',
         delivery: deliveryFee,
         itemsTotal: itemsTotal(),
-        discountPercent: Number(accountState.loyalty.discountPercent || 0),
-        discountAmount: Math.floor(itemsTotal() * Number(accountState.loyalty.discountPercent || 0) / 100),
-        discount: Math.floor(itemsTotal() * Number(accountState.loyalty.discountPercent || 0) / 100),
-        total: itemsTotal() - Math.floor(itemsTotal() * Number(accountState.loyalty.discountPercent || 0) / 100) + deliveryFee,
+        bonusRequested: Math.min(bonusApplied, getMaxBonusForCart()),
+        bonus_requested: Math.min(bonusApplied, getMaxBonusForCart()),
+        discountPercent: 0,
+        discountAmount: Math.min(bonusApplied, getMaxBonusForCart()),
+        discount: Math.min(bonusApplied, getMaxBonusForCart()),
+        total: Math.max(0, itemsTotal() - Math.min(bonusApplied, getMaxBonusForCart()) + deliveryFee),
+        orderRequestId:
+          (window.crypto && typeof window.crypto.randomUUID === 'function')
+            ? window.crypto.randomUUID()
+            : `order-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         orderDate: todayISO(),
         orderTime,
         orderWhen: whenVal,
@@ -1649,6 +1733,16 @@
     /* ==== Events & Init ==== */
     const jumpCart=document.getElementById('jump-cart');
     districtSelect.addEventListener('change', ()=>{ updateTotals(); saveState(); });
+    bonusInput.addEventListener('input', ()=>{
+      bonusTouched = true;
+      bonusApplied = Math.max(0, Math.floor(Number(bonusInput.value || 0)));
+      updateTotals();
+    });
+    bonusApply.addEventListener('click', ()=>{
+      bonusTouched = true;
+      normalizeBonusInput();
+      updateTotals();
+    });
     jumpCart.onclick = ()=> document.getElementById('cart')?.scrollIntoView({behavior:'smooth'});
     document.getElementById('checkout-btn').onclick = submitOrder;
     langToggle.onclick = ()=> { setLanguage(language==='ru'?'en':'ru'); saveState(); };
