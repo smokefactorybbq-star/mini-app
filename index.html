@@ -455,7 +455,17 @@
   </div>
 
   <script>
-    // Старые долговременные auth-параметры больше не используются и удаляются из URL.
+    // Авторизация Mini App из кнопки бота.
+    // Сначала сохраняем подписанные параметры пользователя, а уже потом
+    // убираем их из адресной строки, чтобы они не оставались видимыми.
+    const launchParams = new URLSearchParams(window.location.search);
+    const signedUserToken = launchParams.get('u') || launchParams.get('tg_user') || '';
+    const signedUserSignature = launchParams.get('s') || launchParams.get('tg_sig') || '';
+
+    function hasSignedLaunchAuth(){
+      return Boolean(signedUserToken && signedUserSignature);
+    }
+
     try {
       const cleanUrl = new URL(window.location.href);
       let changed = false;
@@ -974,8 +984,11 @@
 
       if(initData){
         headers['X-Telegram-Init-Data'] = initData;
+      }else if(hasSignedLaunchAuth()){
+        headers['X-Miniapp-User-Token'] = signedUserToken;
+        headers['X-Miniapp-Signature'] = signedUserSignature;
       }else{
-        throw new Error('Отправьте боту /start и откройте меню защищённой кнопкой');
+        throw new Error('Отправьте боту /start и откройте меню новой кнопкой');
       }
 
       console.log('[API]', options.method || 'GET', url);
