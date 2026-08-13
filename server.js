@@ -2231,63 +2231,60 @@ app.use(
 
 
 /*
- * Статические файлы:
+ * Безопасная раздача Mini App в старой структуре проекта.
  *
- * Только public/index.html и public/images/.
- * server.js, package.json и другие серверные файлы не публикуются.
+ * ВАЖНО:
+ * index.html и папка images/ остаются в корне проекта.
+ * Мы НЕ публикуем весь __dirname, поэтому server.js, package.json,
+ * .env и другие серверные файлы недоступны через HTTP.
  */
 app.use(
+  "/images",
   express.static(
-    path.join(
-      __dirname,
-      "public"
-    ),
+    path.join(__dirname, "images"),
     {
-      extensions: [
-        "html"
-      ],
-
-      index:
-        "index.html",
-
       etag: true,
       maxAge: "1h",
-      dotfiles: "deny"
+      dotfiles: "deny",
+      fallthrough: false
     }
   )
 );
 
 
 /*
- * Остальные GET-запросы
- * открывают index.html.
+ * Главная страница Mini App.
  */
-app.use(
-  (req, res, next) => {
-    if (
-      req.method !== "GET"
-    ) {
-      return next();
-    }
-
-    return res.sendFile(
-      path.join(
-        __dirname,
-        "public",
-        "index.html"
-      ),
-      {
-        headers: {
-          "Cache-Control":
-            "no-store, no-cache, " +
-            "must-revalidate, " +
-            "proxy-revalidate"
-        }
+function sendMiniAppIndex(req, res) {
+  return res.sendFile(
+    path.join(__dirname, "index.html"),
+    {
+      headers: {
+        "Cache-Control":
+          "no-store, no-cache, " +
+          "must-revalidate, " +
+          "proxy-revalidate"
       }
-    );
-  }
-);
+    }
+  );
+}
 
+app.get("/", sendMiniAppIndex);
+app.get("/index.html", sendMiniAppIndex);
+
+
+/*
+ * Старые/дополнительные GET-пути Mini App также открывают index.html.
+ * Это сохраняет совместимость со старыми Telegram URL, но параметры
+ * ?u=...&s=... больше НЕ используются для авторизации.
+ */
+app.use((req, res, next) => {
+  if (req.method !== "GET") {
+    return next();
+  }
+
+  return sendMiniAppIndex(req, res);
+});
 
 let server;
 

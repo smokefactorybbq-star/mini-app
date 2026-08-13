@@ -455,6 +455,21 @@
   </div>
 
   <script>
+    // Старые долговременные auth-параметры больше не используются и удаляются из URL.
+    try {
+      const cleanUrl = new URL(window.location.href);
+      let changed = false;
+      for (const key of ['u', 's', 'tg_user', 'tg_sig']) {
+        if (cleanUrl.searchParams.has(key)) {
+          cleanUrl.searchParams.delete(key);
+          changed = true;
+        }
+      }
+      if (changed) {
+        history.replaceState(null, '', cleanUrl.pathname + (cleanUrl.search || '') + cleanUrl.hash);
+      }
+    } catch (_) {}
+
     // Безопасная инициализация Telegram WebApp
     try {
       if (window.Telegram && Telegram.WebApp) {
@@ -472,7 +487,7 @@
         Telegram.WebApp &&
         Telegram.WebApp.initData
       ),
-      hasSignedLaunchAuth: Boolean(new URLSearchParams(window.location.search).get('u') || new URLSearchParams(window.location.search).get('tg_user'))
+      secureTelegramAuth: true
     });
 
     /* ==== Categories ==== */
@@ -866,12 +881,31 @@
         const t=translations[language];
         addrSummary.style.display='';
         const url = buildAddressUrl();
-        addrSummary.innerHTML=
-          `<div><strong>${t.address}:</strong> <a href="${url}" target="_blank" rel="noopener">${customer.address}</a></div>
-           <div><strong>${t.name}:</strong> ${customer.name||''}</div>
-           <div><strong>${t.phone}:</strong> ${customer.phone||''}</div>`;
+
+        const addressRow = document.createElement('div');
+        const addressStrong = document.createElement('strong');
+        addressStrong.textContent = `${t.address}:`;
+        const addressLink = document.createElement('a');
+        addressLink.href = url;
+        addressLink.target = '_blank';
+        addressLink.rel = 'noopener noreferrer';
+        addressLink.textContent = customer.address;
+        addressRow.append(addressStrong, document.createTextNode(' '), addressLink);
+
+        const nameRow = document.createElement('div');
+        const nameStrong = document.createElement('strong');
+        nameStrong.textContent = `${t.name}:`;
+        nameRow.append(nameStrong, document.createTextNode(` ${customer.name || ''}`));
+
+        const phoneRow = document.createElement('div');
+        const phoneStrong = document.createElement('strong');
+        phoneStrong.textContent = `${t.phone}:`;
+        phoneRow.append(phoneStrong, document.createTextNode(` ${customer.phone || ''}`));
+
+        addrSummary.replaceChildren(addressRow, nameRow, phoneRow);
       }else{
         addrSummary.style.display='none';
+        addrSummary.replaceChildren();
       }
     }
     function syncCheckoutBtn(){ checkoutBtn.disabled=!canCheckout(); }
@@ -923,20 +957,12 @@
     }
 
 
-    const launchParams = new URLSearchParams(window.location.search);
-    const signedUserToken = launchParams.get('u') || launchParams.get('tg_user') || '';
-    const signedUserSignature = launchParams.get('s') || launchParams.get('tg_sig') || '';
-
     function telegramInitData(){
       try {
         return (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) || '';
       } catch(_){
         return '';
       }
-    }
-
-    function hasSignedLaunchAuth(){
-      return Boolean(signedUserToken && signedUserSignature);
     }
 
     async function apiRequest(url, options={}){
@@ -946,18 +972,10 @@
         options.headers || {}
       );
 
-      // При запуске из inline/menu button Telegram передаёт initData.
       if(initData){
         headers['X-Telegram-Init-Data'] = initData;
-      }
-      // При запуске через KeyboardButton WebApp initData пустой.
-      // В этом случае бот добавляет в URL подписанный токен пользователя.
-      else if(hasSignedLaunchAuth()){
-        headers['X-Miniapp-User-Token'] = signedUserToken;
-        headers['X-Miniapp-Signature'] = signedUserSignature;
-      }
-      else{
-        throw new Error('Отправьте боту /start и откройте меню новой кнопкой');
+      }else{
+        throw new Error('Отправьте боту /start и откройте меню защищённой кнопкой');
       }
 
       console.log('[API]', options.method || 'GET', url);
@@ -1057,14 +1075,19 @@
         const head=document.createElement('div'); head.className='history-head';
         const left=document.createElement('div');
         const date=new Date(order.created_at);
-        left.innerHTML=`<strong>Заказ №${order.id}</strong><div class="muted">${date.toLocaleString('ru-RU')}</div>`;
+        const orderTitle=document.createElement('strong'); orderTitle.textContent=`Заказ №${String(order.id||'')}`;
+        const orderDate=document.createElement('div'); orderDate.className='muted'; orderDate.textContent=date.toLocaleString('ru-RU');
+        left.append(orderTitle,orderDate);
         const total=document.createElement('strong'); total.textContent=`${order.total} ฿`;
         head.append(left,total);
         const itemsWrap=document.createElement('div'); itemsWrap.className='history-items';
         (order.items||[]).forEach(item=>{
           const row=document.createElement('div'); row.className='history-item';
           const img=document.createElement('img'); img.src=item.img || findCurrentMenuItem(item.name)?.img || '/images/logo.jpg'; img.alt=item.name;
-          const text=document.createElement('div'); text.innerHTML=`<strong>${item.name}</strong><div class="muted">${item.qty} × ${item.price} ฿</div>`;
+          const text=document.createElement('div');
+          const itemTitle=document.createElement('strong'); itemTitle.textContent=String(item.name||'');
+          const itemMeta=document.createElement('div'); itemMeta.className='muted'; itemMeta.textContent=`${Number(item.qty)||0} × ${Number(item.price)||0} ฿`;
+          text.append(itemTitle,itemMeta);
           const sum=document.createElement('div'); sum.textContent=`${item.qty*item.price} ฿`;
           row.append(img,text,sum); itemsWrap.append(row);
         });
