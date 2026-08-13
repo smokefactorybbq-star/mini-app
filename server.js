@@ -378,7 +378,7 @@ function validateTelegramInitData(
   if (
     !authDate ||
     currentTime - authDate >
-      24 * 60 * 60 ||
+      10 * 60 ||
     authDate > currentTime + 5 * 60
   ) {
     throw new Error(
@@ -421,148 +421,12 @@ function validateTelegramInitData(
 /*
  * Расшифровка Base64 URL.
  */
-function decodeBase64Url(value) {
-  const normalized = String(
-    value || ""
-  )
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-
-  const paddingLength =
-    (
-      4 -
-      (
-        normalized.length % 4
-      )
-    ) % 4;
-
-  const padded =
-    normalized +
-    "=".repeat(paddingLength);
-
-  return Buffer
-    .from(
-      padded,
-      "base64"
-    )
-    .toString("utf8");
-}
 
 
 /*
- * Проверка подписанной ссылки,
+ * Проверка Telegram Mini App данных,
  * которую создаёт bot.py.
  */
-function validateSignedLaunchToken(
-  token,
-  receivedSignature
-) {
-  if (
-    !token ||
-    !receivedSignature
-  ) {
-    throw new Error(
-      "Signed Mini App authorization " +
-      "is missing"
-    );
-  }
-
-  const calculatedSignature = crypto
-    .createHmac(
-      "sha256",
-      BOT_TOKEN
-    )
-    .update(
-      String(token)
-    )
-    .digest("hex");
-
-  if (
-    !safeHexEqual(
-      receivedSignature,
-      calculatedSignature
-    )
-  ) {
-    throw new Error(
-      "Invalid Mini App signature"
-    );
-  }
-
-  let payload;
-
-  try {
-    payload = JSON.parse(
-      decodeBase64Url(token)
-    );
-  } catch (_) {
-    throw new Error(
-      "Invalid Mini App user token"
-    );
-  }
-
-  const timestamp = Number(
-    payload?.t ||
-    payload?.ts ||
-    0
-  );
-
-  const currentTime = Math.floor(
-    Date.now() / 1000
-  );
-
-  const maxAgeSeconds =
-    30 * 24 * 60 * 60;
-
-  if (
-    !timestamp ||
-    currentTime - timestamp >
-      maxAgeSeconds ||
-    timestamp >
-      currentTime + 5 * 60
-  ) {
-    throw new Error(
-      "Mini App button expired. " +
-      "Send /start to the bot"
-    );
-  }
-
-  if (
-    !(
-      payload?.i ||
-      payload?.id
-    )
-  ) {
-    throw new Error(
-      "Mini App user ID is missing"
-    );
-  }
-
-  return {
-    id:
-      payload.i ||
-      payload.id,
-
-    username:
-      payload.n ||
-      payload.username ||
-      "",
-
-    first_name:
-      payload.f ||
-      payload.first_name ||
-      "",
-
-    last_name:
-      payload.l ||
-      payload.last_name ||
-      "",
-
-    photo_url:
-      payload.p ||
-      payload.photo_url ||
-      ""
-  };
-}
 
 
 /*
@@ -581,40 +445,20 @@ function miniAppAuth(
       req.body?.initData ||
       "";
 
-    if (initData) {
-      req.telegramUser =
-        validateTelegramInitData(
-          initData
-        );
-
-      req.authSource =
-        "telegram-init-data";
-
-      return next();
+    if (!initData) {
+      throw new Error(
+        "Telegram initData is required. " +
+        "Open the Mini App from the secure inline/menu button."
+      );
     }
 
-    const token =
-      req.get(
-        "X-Miniapp-User-Token"
-      ) ||
-      req.body?.miniAppUserToken ||
-      "";
-
-    const signature =
-      req.get(
-        "X-Miniapp-Signature"
-      ) ||
-      req.body?.miniAppSignature ||
-      "";
-
     req.telegramUser =
-      validateSignedLaunchToken(
-        token,
-        signature
+      validateTelegramInitData(
+        initData
       );
 
     req.authSource =
-      "signed-keyboard-url";
+      "telegram-init-data";
 
     return next();
 
@@ -2389,14 +2233,15 @@ app.use(
 /*
  * Статические файлы:
  *
- * server.js
- * index.html
- * images/
- * package.json
+ * Только public/index.html и public/images/.
+ * server.js, package.json и другие серверные файлы не публикуются.
  */
 app.use(
   express.static(
-    __dirname,
+    path.join(
+      __dirname,
+      "public"
+    ),
     {
       extensions: [
         "html"
@@ -2406,7 +2251,8 @@ app.use(
         "index.html",
 
       etag: true,
-      maxAge: "1h"
+      maxAge: "1h",
+      dotfiles: "deny"
     }
   )
 );
@@ -2427,6 +2273,7 @@ app.use(
     return res.sendFile(
       path.join(
         __dirname,
+        "public",
         "index.html"
       ),
       {
