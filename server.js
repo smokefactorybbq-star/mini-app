@@ -421,54 +421,111 @@ function validateTelegramInitData(
 /*
  * Расшифровка Base64 URL.
  */
+function decodeBase64Url(value) {
+  const normalized = String(value || "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const paddingLength = (4 - (normalized.length % 4)) % 4;
+  const padded = normalized + "=".repeat(paddingLength);
+
+  return Buffer.from(padded, "base64").toString("utf8");
+}
 
 
 /*
- * Проверка Telegram Mini App данных,
- * которую создаёт bot.py.
+ * Проверка подписанной ссылки, которую создаёт bot.py.
+ * Формат: ?u=<base64url-json>&s=<hmac-sha256-hex>
  */
+function validateSignedLaunchToken(token, receivedSignature) {
+  if (!token || !receivedSignature) {
+    throw new Error("Signed Mini App authorization is missing");
+  }
+
+  const calculatedSignature = crypto
+    .createHmac("sha256", BOT_TOKEN)
+    .update(String(token))
+    .digest("hex");
+
+  if (!safeHexEqual(receivedSignature, calculatedSignature)) {
+    throw new Error("Invalid Mini App signature");
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(decodeBase64Url(token));
+  } catch (_) {
+    throw new Error("Invalid Mini App user token");
+  }
+
+  const timestamp = Number(payload?.t || payload?.ts || 0);
+  const currentTime = Math.floor(Date.now() / 1000);
+  const maxAgeSeconds = 30 * 24 * 60 * 60;
+
+  if (
+    !timestamp ||
+    currentTime - timestamp > maxAgeSeconds ||
+    timestamp > currentTime + 5 * 60
+  ) {
+    throw new Error("Mini App button expired. Send /start to the bot");
+  }
+
+  if (!(payload?.i || payload?.id)) {
+    throw new Error("Mini App user ID is missing");
+  }
+
+  return {
+    id: payload.i || payload.id,
+    username: payload.n || payload.username || "",
+    first_name: payload.f || payload.first_name || "",
+    last_name: payload.l || payload.last_name || "",
+    photo_url: payload.p || payload.photo_url || ""
+  };
+}
 
 
 /*
  * Авторизация личного кабинета.
+ * Поддерживаем оба production-пути:
+ * 1) подписанная ссылка u/s от KeyboardButton WebApp;
+ * 2) Telegram WebApp initData.
+ * Если u/s присутствуют, используем их первыми: это тот же Telegram ID,
+ * который bot.py вложил в конкретную кнопку пользователя.
  */
-function miniAppAuth(
-  req,
-  res,
-  next
-) {
+function miniAppAuth(req, res, next) {
   try {
+    const token =
+      req.get("X-Miniapp-User-Token") ||
+      req.body?.miniAppUserToken ||
+      "";
+
+    const signature =
+      req.get("X-Miniapp-Signature") ||
+      req.body?.miniAppSignature ||
+      "";
+
+    if (token && signature) {
+      req.telegramUser = validateSignedLaunchToken(token, signature);
+      req.authSource = "signed-keyboard-url";
+      return next();
+    }
+
     const initData =
-      req.get(
-        "X-Telegram-Init-Data"
-      ) ||
+      req.get("X-Telegram-Init-Data") ||
       req.body?.initData ||
       "";
 
-    if (!initData) {
-      throw new Error(
-        "Telegram initData is required. " +
-        "Open the Mini App from the secure inline/menu button."
-      );
+    if (initData) {
+      req.telegramUser = validateTelegramInitData(initData);
+      req.authSource = "telegram-init-data";
+      return next();
     }
 
-    req.telegramUser =
-      validateTelegramInitData(
-        initData
-      );
-
-    req.authSource =
-      "telegram-init-data";
-
-    return next();
-
-  } catch (error) {
-    console.error(
-      `[AUTH] ${req.method} ` +
-      `${req.path}: ` +
-      error.message
+    throw new Error(
+      "Mini App authorization is missing. Send /start to the bot and open the new menu button."
     );
-
+  } catch (error) {
+    console.error(`[AUTH] ${req.method} ${req.path}: ${error.message}`);
     return res.status(401).json({
       ok: false,
       error: error.message
@@ -2275,8 +2332,8 @@ app.get("/index.html", sendMiniAppIndex);
 
 /*
  * Старые/дополнительные GET-пути Mini App также открывают index.html.
- * Это сохраняет совместимость со старыми Telegram URL, но параметры
- * ?u=...&s=... больше НЕ используются для авторизации.
+ * Это сохраняет совместимость со старыми Telegram URL.
+ * Параметры ?u=...&s=... используются как подписанная авторизация от bot.py.
  */
 app.use((req, res, next) => {
   if (req.method !== "GET") {

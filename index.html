@@ -455,17 +455,13 @@
   </div>
 
   <script>
-    // Авторизация Mini App из кнопки бота.
-    // Сначала сохраняем подписанные параметры пользователя, а уже потом
-    // убираем их из адресной строки, чтобы они не оставались видимыми.
+    // Считываем подписанную авторизацию от bot.py ДО очистки адресной строки.
     const launchParams = new URLSearchParams(window.location.search);
     const signedUserToken = launchParams.get('u') || launchParams.get('tg_user') || '';
     const signedUserSignature = launchParams.get('s') || launchParams.get('tg_sig') || '';
 
-    function hasSignedLaunchAuth(){
-      return Boolean(signedUserToken && signedUserSignature);
-    }
-
+    // После считывания убираем чувствительные параметры из видимого URL,
+    // но оставляем их в памяти страницы для API-запросов.
     try {
       const cleanUrl = new URL(window.location.href);
       let changed = false;
@@ -497,7 +493,6 @@
         Telegram.WebApp &&
         Telegram.WebApp.initData
       ),
-      hasSignedLaunchAuth: hasSignedLaunchAuth(),
       secureTelegramAuth: true
     });
 
@@ -976,96 +971,50 @@
       }
     }
 
-    function buildAuthCandidates(){
-      const candidates = [];
-
-      // Для кнопки бота сначала используем подписанный URL.
-      // Он однозначно содержит Telegram ID пользователя, которому
-      // бот сформировал эту кнопку.
-      if(hasSignedLaunchAuth()){
-        candidates.push({
-          name:'signed-button',
-          headers:{
-            'X-Miniapp-User-Token': signedUserToken,
-            'X-Miniapp-Signature': signedUserSignature
-          }
-        });
-      }
-
-      // Если Telegram передал штатный initData — используем его как
-      // второй независимый способ авторизации.
-      const initData = telegramInitData();
-      if(initData){
-        candidates.push({
-          name:'telegram-init-data',
-          headers:{'X-Telegram-Init-Data': initData}
-        });
-      }
-
-      return candidates;
+    function hasSignedLaunchAuth(){
+      return Boolean(signedUserToken && signedUserSignature);
     }
 
     async function apiRequest(url, options={}){
-      const candidates = buildAuthCandidates();
+      const initData = telegramInitData();
+      const headers = Object.assign(
+        {'Content-Type':'application/json'},
+        options.headers || {}
+      );
 
-      if(!candidates.length){
-        throw new Error('Нет данных авторизации Telegram. Отправьте боту /start и откройте меню новой кнопкой.');
+      // Для KeyboardButton WebApp bot.py передаёт подписанные u/s.
+      // Используем их первыми, чтобы сервер получил именно Telegram ID
+      // пользователя, для которого была создана кнопка.
+      if(hasSignedLaunchAuth()){
+        headers['X-Miniapp-User-Token'] = signedUserToken;
+        headers['X-Miniapp-Signature'] = signedUserSignature;
+      }else if(initData){
+        headers['X-Telegram-Init-Data'] = initData;
+      }else{
+        throw new Error('Отправьте боту /start и откройте меню новой кнопкой');
       }
 
-      let lastError = null;
+      console.log('[API]', options.method || 'GET', url, {
+        signedAuth: hasSignedLaunchAuth(),
+        telegramInitData: Boolean(initData)
+      });
 
-      for(let i=0; i<candidates.length; i++){
-        const candidate = candidates[i];
-        const headers = Object.assign(
-          {'Content-Type':'application/json','Accept':'application/json'},
-          candidate.headers,
-          options.headers || {}
-        );
+      const response = await fetch(
+        url,
+        Object.assign({}, options, {headers, cache:'no-store'})
+      );
 
-        console.log('[API]', options.method || 'GET', url, 'auth=', candidate.name);
+      const data = await response.json().catch(()=>(
+        {ok:false,error:'Ошибка ответа сервера'}
+      ));
 
-        let response;
-        try{
-          response = await fetch(
-            url,
-            Object.assign({}, options, {headers, cache:'no-store'})
-          );
-        }catch(error){
-          lastError = new Error('Сервер недоступен: '+(error?.message || 'ошибка сети'));
-          continue;
-        }
+      console.log('[API RESPONSE]', response.status, url, data);
 
-        const rawText = await response.text();
-        let data;
-        try{
-          data = rawText ? JSON.parse(rawText) : {};
-        }catch(_){
-          data = {ok:false,error:rawText || 'Некорректный ответ сервера'};
-        }
-
-        console.log('[API RESPONSE]', response.status, url, 'auth=', candidate.name, data);
-
-        if(response.ok && data && data.ok){
-          return data;
-        }
-
-        lastError = new Error(
-          (data && data.error)
-            ? `${data.error} [${candidate.name}]`
-            : `Ошибка сервера: ${response.status} [${candidate.name}]`
-        );
-
-        // 401/403 может означать, что именно этот способ авторизации
-        // не подошёл. Тогда пробуем следующий способ.
-        if(response.status === 401 || response.status === 403){
-          continue;
-        }
-
-        // Для остальных ошибок второй способ авторизации обычно уже
-        // не поможет, но если он есть — всё равно пробуем его.
+      if(!response.ok || !data.ok){
+        throw new Error(data.error || `Ошибка сервера: ${response.status}`);
       }
 
-      throw lastError || new Error('Не удалось авторизовать пользователя Telegram');
+      return data;
     }
 
     function applyAccountData(data){
@@ -1188,33 +1137,12 @@
 
     async function bootstrapAccount(){
       try{
-        accountMessage.textContent='Загружаем данные...';
-
         const sessionKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        let data = await apiRequest('/api/bootstrap',{
-          method:'POST',
-          body:JSON.stringify({sessionKey})
-        });
-
-        // Если bootstrap по какой-то причине вернул только {ok:true}
-        // или неполный объект, перечитываем кабинет отдельным endpoint.
-        if(!data?.profile?.telegramId){
-          console.warn('[ACCOUNT] bootstrap returned incomplete data, retrying /api/account', data);
-          data = await apiRequest('/api/account',{method:'GET'});
-        }
-
-        if(!data?.profile?.telegramId){
-          throw new Error('Сервер авторизовал запрос, но не вернул Telegram ID личного кабинета');
-        }
-
+        const data = await apiRequest('/api/bootstrap',{method:'POST',body:JSON.stringify({sessionKey})});
         applyAccountData(data);
-        accountMessage.textContent = `✅ Кабинет загружен. Telegram ID: ${data.profile.telegramId}`;
-        console.log('[ACCOUNT] loaded Telegram ID=', data.profile.telegramId, 'loyalty=', data.loyalty, 'orders=', (data.orders||[]).length);
-
       }catch(error){
         console.warn('Account bootstrap:',error.message);
-        accountState.ready = false;
-        accountMessage.textContent='⚠️ '+(error.message || 'Не удалось загрузить личный кабинет');
+        accountMessage.textContent=error.message;
       }
     }
 
