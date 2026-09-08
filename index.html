@@ -19,6 +19,44 @@
     .hero-text{font-weight:800;line-height:1.3}
     .lang-toggle{margin-top:8px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit}
     @media(max-width:768px){.header-inner{grid-template-columns:1fr 2fr;padding:10px 12px}.logo-img{height:100px}.hero-text{font-size:15px}}
+    .loyalty-register-note{margin-top:8px;font-size:13px;line-height:1.35;color:#374151;font-weight:650;max-width:720px}
+    .fulfillment-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 4px}
+    .fulfillment-btn{padding:15px 10px;border:2px solid var(--border);border-radius:14px;background:#fff;font-weight:900;font-size:16px;cursor:pointer;min-height:52px}
+    .fulfillment-btn:focus-visible{outline:3px solid rgba(37,99,235,.25);outline-offset:2px}
+    .fulfillment-btn.active{background:#111827;color:#fff;border-color:#111827}
+    .telegram-login-box{border:1px solid var(--border);background:#f8fafc;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:9px}
+    .subscription-promo{margin-bottom:28px}
+    .subscription-promo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+    .subscription-promo-panel{border-radius:24px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.14);min-width:0;min-height:340px}
+    .subscription-promo-copy{background:#111827;color:#fff;padding:28px;display:flex;flex-direction:column;gap:13px;justify-content:center;height:100%}
+    .subscription-promo-copy h3{margin:0;font-size:30px;line-height:1.05}
+    .subscription-promo-copy p{margin:0;color:#e5e7eb;line-height:1.55}
+    .subscription-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .subscription-fact{background:rgba(255,255,255,.09);border-radius:12px;padding:10px;text-align:center}
+    .subscription-fact b{display:block;font-size:19px}
+    .subscription-promo-cta{display:inline-flex;align-self:flex-start;text-decoration:none;background:#fff;color:#111827;padding:12px 16px;border-radius:12px;font-weight:900}
+    .subscription-promo-image-panel{background:#fff;padding:12px;display:flex;align-items:center;justify-content:center}
+    .subscription-promo-img{width:100%;height:100%;max-height:316px;object-fit:contain;display:block}
+    .subscription-showcase-panel{background:#fff;padding:12px}
+    .subscription-showcase{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:10px;height:100%}
+    .subscription-box-stack{display:grid;grid-template-rows:1fr 1fr;gap:10px;height:100%}
+    .subscription-box-stack img,
+    .subscription-showcase-fridge{width:100%;height:100%;object-fit:contain;display:block;border-radius:14px;background:#fff}
+    @media(max-width:1024px){
+      .subscription-promo-grid{grid-template-columns:1fr}
+      .subscription-promo-panel{min-height:unset}
+      .subscription-promo-copy{padding:20px}
+      .subscription-promo-copy h3{font-size:25px}
+      .subscription-facts{grid-template-columns:1fr 1fr 1fr}
+      .subscription-promo-image-panel{min-height:220px}
+      .subscription-promo-img{max-height:420px}
+      .subscription-showcase{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);min-height:280px}
+    }
+    @media(max-width:640px){
+      .subscription-showcase{grid-template-columns:1fr;gap:10px}
+      .subscription-box-stack{grid-template-columns:1fr 1fr;grid-template-rows:none;height:auto}
+      .subscription-showcase-fridge{max-height:300px}
+    }
 
     /* categories strip */
     .cat-strip-wrap{position:sticky;top:0;z-index:45;background:#fff;border-bottom:1px solid var(--border)}
@@ -92,7 +130,17 @@
     @media(max-width:640px){.input-row{grid-template-columns:1fr}}
     .muted{color:var(--muted)}
     .pay-group{display:flex;gap:10px;flex-wrap:wrap}
-    .pay-group label{font-weight:400}
+    .pay-group label{font-weight:700;border:1px solid var(--border);border-radius:12px;padding:9px 11px;background:#fff;display:flex;align-items:center;gap:6px}
+    .pay-group label.disabled{opacity:.42;cursor:not-allowed;background:#f3f4f6}
+    .checkout-fields{display:flex;flex-direction:column;gap:10px;border:1px solid var(--border);border-radius:14px;padding:12px;background:#f8fafc}
+    .map-required{font-size:12px;color:#b45309;font-weight:700}
+    .order-time-button{width:100%;text-align:left;font-weight:800;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer}
+    .qr-pay-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+    .qr-pay-img{width:min(360px,78vw);height:auto;border-radius:12px;background:#fff;border:1px solid var(--border);padding:8px}
+    .qr-pay-save{margin-left:auto;display:flex;align-items:center;gap:6px;border:0;background:transparent;color:#2563eb;font-weight:800;cursor:pointer}
+    .qr-pay-total{font-size:25px;font-weight:950}
+    .qr-pay-note{font-weight:800;line-height:1.4}
+    .qr-pay-paid{width:100%;max-width:360px;background:var(--accent);color:#fff;border:0;border-radius:14px;padding:14px;font-size:17px;font-weight:900;cursor:pointer}
 
     .phone-wrap{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .phone-prefix{display:flex;align-items:center;padding:0 10px;background:#f1f5f9;border-right:1px solid var(--border)}
@@ -150,7 +198,9 @@
 
 
     /* account */
-    .account-trigger{margin-top:8px;margin-left:8px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;font-weight:700}
+    .account-trigger{margin-top:8px;margin-left:8px;padding:9px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;font-weight:800;transition:background .2s ease,color .2s ease,border-color .2s ease,transform .15s ease}
+    .account-trigger:hover{transform:translateY(-1px)}
+    .account-trigger.login-mode{background:#229ED9;color:#fff;border-color:#229ED9;box-shadow:0 3px 10px rgba(34,158,217,.22)}
     .account-modal-content{width:min(760px,96vw);max-height:96vh}
     .account-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
     .account-avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.18);background:#f3f4f6}
@@ -184,6 +234,7 @@
       .profile-grid{grid-template-columns:1fr}
       .profile-grid .full{grid-column:auto}
     }
+      #map-wrap{display:none}
   </style>
 </head>
 
@@ -199,7 +250,8 @@
       <div>
         <div class="hero-text" id="hero-text">Delivery 10.00 to 22.00 MON-SAT</div>
         <button class="lang-toggle" id="lang-toggle" aria-label="Switch language">🇷🇺 RU</button>
-        <button class="account-trigger" id="account-open" type="button">👤 Личный кабинет</button>
+        <button class="account-trigger login-mode" id="account-open" type="button">✈ Войти через Telegram</button>
+        <div class="loyalty-register-note" id="loyalty-register-note">Зарегистрируйтесь в личном кабинете, чтобы участвовать в программе лояльности и получать бонусные баты.</div>
       </div>
     </div>
   </header>
@@ -227,20 +279,53 @@
       <div class="cart-body">
         <div id="cart-items"></div>
 
-        <label class="summary-text" id="district-label">Район доставки</label>
-        <select class="input" id="district-select">
-          <option value="50">Central Phuket, Kathu — 50 ฿</option>
-          <option value="0">Base up town — 0 ฿</option>
-          <option value="150">Kata, Karon, — 150 ฿</option>
-          <option value="150">Rawai — 150 ฿</option>
-          <option value="200">Bang Tao — 200 ฿</option>
-          <option value="200">Surin — 200 ฿</option>
-          <option value="100">Chalong — 100 ฿</option>
-          <option value="100">Patong — 100 ฿</option>
-          <option value="150">Kamala — 150 ฿</option>
-        </select>
+        <div class="fulfillment-switch" id="fulfillment-switch" aria-label="Способ получения">
+          <button class="fulfillment-btn active" id="fulfillment-delivery" type="button">🚚 Доставка</button>
+          <button class="fulfillment-btn" id="fulfillment-pickup" type="button">🥡 Самовывоз</button>
+        </div>
 
-        <div><span class="address-link" id="open-address">Specify address</span></div>
+        <div class="checkout-fields">
+          <div class="input-row">
+            <input class="input" id="name-input" placeholder="Имя" autocomplete="name" />
+            <div class="phone-wrap">
+              <div class="phone-prefix">+66</div>
+              <input class="phone-input" id="phone-input" inputmode="numeric" maxlength="10" placeholder="Телефон" autocomplete="tel" />
+            </div>
+          </div>
+
+          <div id="delivery-options">
+            <label class="summary-text" id="district-label">Район доставки</label>
+            <select class="input" id="district-select">
+              <option value="CENTRAL_KATHU">Central Phuket, Kathu — 50 ฿</option>
+              <option value="BASE_UP_TOWN">Base up town — 0 ฿</option>
+              <option value="KATA_KARON">Kata, Karon — 150 ฿</option>
+              <option value="RAWAI">Rawai — 150 ฿</option>
+              <option value="BANG_TAO">Bang Tao — 200 ฿</option>
+              <option value="SURIN">Surin — 200 ฿</option>
+              <option value="CHALONG">Chalong — 100 ฿</option>
+              <option value="PATONG">Patong — 100 ฿</option>
+              <option value="KAMALA">Kamala — 150 ฿</option>
+            </select>
+
+            <div id="delivery-address-field" style="margin-top:10px">
+              <input class="input" id="addr-input" placeholder="Адрес доставки" autocomplete="street-address" />
+            </div>
+            <div class="map-tools" style="margin-top:8px">
+              <button class="btn" id="map-toggle" type="button">📍 Поставить точку на карте</button>
+              <button class="btn" id="geo-btn" type="button">◎ Моё местоположение</button>
+            </div>
+            <div class="map-required" id="map-required">Для доставки обязательно поставьте точку на карте.</div>
+            <div class="map-wrap" id="map-wrap">
+              <div class="map-head"><input class="input" id="map-search" placeholder="Поиск на карте (адрес/место)" /></div>
+              <div class="map-box-wrap">
+                <button class="map-close" id="map-close" aria-label="Скрыть карту" title="Скрыть карту">×</button>
+                <div class="map-box" id="map"></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="order-time-button" id="open-time" type="button">⏰ Время: ближайшее</button>
+        </div>
         <div class="summary-text" id="addr-summary" style="display:none"></div>
 
         <div class="bonus-box">
@@ -274,8 +359,8 @@
 
         <label class="summary-text" id="pay-label" style="margin-top:6px;">Способ оплаты</label>
         <div class="pay-group" id="pay-group">
-          <label><input type="radio" name="payment" value="Thai bank" checked> Thai bank</label>
-          <label><input type="radio" name="payment" value="True money"> True money</label>
+          <label><input type="radio" name="payment" value="PromptPay" checked> PromptPay (Thai bank)</label>
+          <label id="cash-payment-label"><input type="radio" id="cash-payment" name="payment" value="Cash"> Cash</label>
           <label><input type="radio" name="payment" value="Банк РФ"> Банк РФ</label>
         </div>
 
@@ -318,7 +403,12 @@
         <button class="btn" id="account-close" aria-label="Закрыть">×</button>
       </div>
       <div class="modal-body">
-        <div class="account-top">
+        <div class="telegram-login-box" id="telegram-login-box" style="display:none">
+          <strong>Вход через Telegram</strong>
+          <div class="muted">Один аккаунт для сайта Smoke Factory и Telegram Mini App: история заказов и бонусы общие. MealPoint — отдельный сервис.</div>
+          <div id="telegram-login-widget"></div>
+        </div>
+        <div class="account-top account-auth-only" id="account-auth-content">
           <img class="account-avatar" id="account-avatar" src="/images/logo.jpg" alt="Аватар">
           <div class="telegram-name" id="account-user-name">Пользователь</div>
           <div class="receipt-name-row">
@@ -343,58 +433,36 @@
           </div>
         </div>
 
-        <div class="profile-grid">
+        <div class="profile-grid account-auth-only">
           <div class="phone-wrap">
             <div class="phone-prefix">+66</div>
             <input class="phone-input" id="profile-phone" inputmode="numeric" maxlength="10" placeholder="Номер телефона">
           </div>
           <textarea class="input full" id="profile-address" rows="3" placeholder="Адрес"></textarea>
         </div>
-        <button class="btn btn-primary" id="profile-save">Сохранить данные</button>
+        <button class="btn btn-primary account-auth-only" id="profile-save">Сохранить данные</button>
+        <a class="btn account-auth-only" id="full-account-link" href="/account" style="text-align:center;text-decoration:none;font-weight:800;">Открыть личный кабинет</a>
         <div class="account-message" id="account-message"></div>
 
-        <div class="history-title">История заказов</div>
-        <div class="history-list" id="history-list"><div class="muted">История пока пуста.</div></div>
+        <div class="history-title account-auth-only">История заказов</div>
+        <div class="history-list account-auth-only" id="history-list"><div class="muted">История пока пуста.</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Address Modal -->
-  <div class="modal-backdrop" id="address-modal">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addr-title">
+  <!-- PromptPay Modal -->
+  <div class="modal-backdrop" id="payment-qr-modal">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="payment-qr-title" style="width:min(520px,94vw)">
       <div class="modal-header">
-        <strong id="addr-title">Delivery Address</strong>
-        <button class="btn" id="addr-close">Close</button>
+        <strong id="payment-qr-title">Оплата PromptPay</strong>
+        <button class="qr-pay-save" id="payment-qr-save" type="button">⬇ Сохранить</button>
       </div>
-      <div class="modal-body">
-        <input class="input" id="addr-input" placeholder="Delivery address" />
-        <div class="input-row">
-          <input class="input" id="name-input" placeholder="Name" />
-          <div class="phone-wrap">
-            <div class="phone-prefix">+66</div>
-            <input class="phone-input" id="phone-input" inputmode="numeric" maxlength="10" placeholder="Phone number (10 digits)" />
-          </div>
-        </div>
-
-        <div class="map-tools">
-          <button class="btn" id="map-toggle">Выбрать на карте</button>
-          <button class="btn" id="geo-btn">Моё местоположение</button>
-        </div>
-        <div class="map-wrap" id="map-wrap">
-          <div class="map-head">
-            <input class="input" id="map-search" placeholder="Поиск на карте (адрес/место)" />
-          </div>
-          <div class="map-box-wrap">
-            <button class="map-close" id="map-close" aria-label="Скрыть карту" title="Скрыть карту">×</button>
-            <div class="map-box" id="map"></div>
-          </div>
-        </div>
-
-        <div class="muted" id="addr-note">The «Confirm» button will become active after entering address and phone.</div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" id="addr-cancel">Cancel</button>
-        <button class="btn btn-primary" id="addr-confirm" disabled>Confirm</button>
+      <div class="modal-body qr-pay-card">
+        <div class="qr-pay-total" id="payment-qr-total">0 ฿</div>
+        <img class="qr-pay-img" id="payment-qr-image" alt="PromptPay QR" />
+        <div class="qr-pay-note">После оплаты пожалуйста пришлите чек.</div>
+        <button class="qr-pay-paid" id="payment-paid" type="button">Я оплатил</button>
+        <button class="btn" id="payment-qr-cancel" type="button">Отмена</button>
       </div>
     </div>
   </div>
@@ -455,27 +523,6 @@
   </div>
 
   <script>
-    // Считываем подписанную авторизацию от bot.py ДО очистки адресной строки.
-    const launchParams = new URLSearchParams(window.location.search);
-    const signedUserToken = launchParams.get('u') || launchParams.get('tg_user') || '';
-    const signedUserSignature = launchParams.get('s') || launchParams.get('tg_sig') || '';
-
-    // После считывания убираем чувствительные параметры из видимого URL,
-    // но оставляем их в памяти страницы для API-запросов.
-    try {
-      const cleanUrl = new URL(window.location.href);
-      let changed = false;
-      for (const key of ['u', 's', 'tg_user', 'tg_sig']) {
-        if (cleanUrl.searchParams.has(key)) {
-          cleanUrl.searchParams.delete(key);
-          changed = true;
-        }
-      }
-      if (changed) {
-        history.replaceState(null, '', cleanUrl.pathname + (cleanUrl.search || '') + cleanUrl.hash);
-      }
-    } catch (_) {}
-
     // Безопасная инициализация Telegram WebApp
     try {
       if (window.Telegram && Telegram.WebApp) {
@@ -493,7 +540,7 @@
         Telegram.WebApp &&
         Telegram.WebApp.initData
       ),
-      secureTelegramAuth: true
+      hasSignedLaunchAuth: Boolean(new URLSearchParams(window.location.search).get('u') || new URLSearchParams(window.location.search).get('tg_user'))
     });
 
     /* ==== Categories ==== */
@@ -520,6 +567,7 @@
         
         { name: "Зраза", img: "/images/zraza.jpeg", price: 200, desc: "Картофельная зраза с мясной начинкой. Подается с соленым огурцом, маринованным луком и сметаной. 210 грамм" },
         { name: "Драники", img: "/images/draniki.jpeg", price: 200, desc: "Подаются с малосоленым лососем, зеленью и сметаной. 200 грамм" },
+        { name: "Ленивые голубцы Том ям", img: "/images/golubtomyam.jpeg", price: 250, desc: "Ленивые голубцы из креветки и кальмара с пекинской капустой, дополненные пикантным соусом Том ям. Подаются с отварным рисом" },
         { name: "Картошка фри", img: "/images/kart fri.jpeg", price: 120, desc: "Подается с кетчупом. 150 грамм" },
         { name: "Картошка дольками", img: "/images/kart dolki.jpeg", price: 120, desc: "Подается с кетчупом. 150 грамм" },
         { name: "Мини чебуреки", img: "/images/min chebureki.jpeg", price: 170, desc: "Хрустящие мини чебуреки с мясной начинкой. Подаются с аджикой. 180 грамм" },
@@ -542,11 +590,10 @@
         { name: "Шашлык из куриного крыла", img: "/images/kyrkrilo.jpeg", price: 240, desc: "Шашлык из куриных крыльев с печеным картофелем, маринованным лучком и шашлычным соусом" },
         { name: "Шашлык из свинины", img: "/images/shashlik iz svinini1.jpeg", price: 250, desc: "Сочный шашлык с дымком - нежные кусочки свинины, маринованные в авторском маринаде. Подается с маринованным луком, свежими овощами и аджикой.260 грамм" },
       ],
-      "Заморозка": [
-      ],
       "Копчение": [
         { name: "Ребро варено-копченое", img: "/images/rebrokop.jpeg", price: 300, desc: "Идеально к пиву. 300 грамм" },
       ],
+      "30 дней неодинаковой еды": [],
     };
 
     /* ==== i18n ==== */
@@ -560,7 +607,7 @@
         deliveryCost:"Стоимость доставки", dishesTotal:"Сумма блюд", totalToPay:"Итого к оплате",
         placeOrder:"Оформить заказ", remove:"удалить",
         districtLabel:"Район доставки", payLabel:"Способ оплаты",
-        categories:{ "Супы":"Супы","Основные блюда":"Основные блюда","Салаты":"Салаты","Гриль":"Гриль","Заморозка":"Заморозка","Копчение":"Копчение" },
+        categories:{ "Супы":"Супы","Основные блюда":"Основные блюда","Салаты":"Салаты","Гриль":"Гриль","Копчение":"Копчение","30 дней неодинаковой еды":"30 дней неодинаковой еды" },
         addrModal:{title:"Адрес доставки",close:"Закрыть",addrPh:"Адрес доставки",namePh:"Имя",phonePh:"Номер телефона (10 цифр)",note:"Кнопка «Подтвердить» станет активной после ввода адреса и телефона.",cancel:"Отмена",confirm:"Подтвердить",mapBtn:"Выбрать на карте",geoBtn:"Моё местоположение",searchPh:"Поиск на карте (адрес/место)",hideMap:"Скрыть карту"},
         soonest:"Ближайшее", selectTime:"Выбрать время",
         comment:"Комментарий к заказу", commentPh:"Например: без лука, позвонить при прибытии…",
@@ -576,7 +623,7 @@
         deliveryCost:"Delivery cost", dishesTotal:"Dishes total", totalToPay:"Total to pay",
         placeOrder:"Place order", remove:"remove",
         districtLabel:"Delivery district", payLabel:"Payment method",
-        categories:{ "Супы":"Soups","Основные блюда":"Main dishes","Салаты":"Salads","Гриль":"Grill","Заморозка":"Frozen","Копчение":"Smoked" },
+        categories:{ "Супы":"Soups","Основные блюда":"Main dishes","Салаты":"Salads","Гриль":"Grill","Копчение":"Smoked","30 дней неодинаковой еды":"30 days of different meals" },
         addrModal:{title:"Delivery Address",close:"Close",addrPh:"Delivery address",namePh:"Name",phonePh:"Phone number (10 digits)",note:"The «Confirm» button will become active after entering address and phone.",cancel:"Cancel",confirm:"Confirm",mapBtn:"Pick on map",geoBtn:"Use my location",searchPh:"Search on map (address/place)",hideMap:"Hide map"},
         soonest:"Soonest", selectTime:"Select time",
         comment:"Order Comment", commentPh:"e.g., no onions, call on arrival…",
@@ -648,6 +695,7 @@
     const STORAGE = { district:'sfb_district', lang:'sfb_lang' };
     const cart = {};
     const customer = { address:"", name:"", phone:"", location:null };
+    let fulfillmentType = 'DELIVERY';
     const orderState = { when:"asap", hour:"10", minute:"00", comment:"" };
     const accountState = { ready:false, profile:null, loyalty:{totalSpend:0,cashbackPercent:0,balance:0,maxRedeemPercent:20,ordersCount:0}, orders:[] };
     let bonusApplied = 0;
@@ -674,7 +722,7 @@
     function loadState(){
       const d = localStorage.getItem(STORAGE.district);
       const districtSelect = document.getElementById('district-select');
-      if(d && districtSelect) districtSelect.value=d;
+      if(d && districtSelect && Array.from(districtSelect.options).some(o=>o.value===d)) districtSelect.value=d;
       const l = localStorage.getItem(STORAGE.lang); if(l) language=l;
     }
 
@@ -686,7 +734,6 @@
     const menuRoot=document.getElementById('menu-root');
     const myOrderLabel=document.getElementById('my-order-label');
     const deliveryPill=document.getElementById('delivery-pill');
-    const openAddrBtn=document.getElementById('open-address');
     const addrSummary=document.getElementById('addr-summary');
     const itemsTotalEl=document.getElementById('items-total');
     const deliveryFeeEl=document.getElementById('delivery-fee');
@@ -704,6 +751,9 @@
     const checkoutBtn=document.getElementById('checkout-btn');
     const districtLabel=document.getElementById('district-label');
     const districtSelect=document.getElementById('district-select');
+    const deliveryOptions=document.getElementById('delivery-options');
+    const fulfillmentDelivery=document.getElementById('fulfillment-delivery');
+    const fulfillmentPickup=document.getElementById('fulfillment-pickup');
     const payLabel=document.getElementById('pay-label');
     const mobileRange=document.getElementById('mobile-range');
     const mobileTotal=document.getElementById('mobile-total');
@@ -731,24 +781,35 @@
     const profileSave=document.getElementById('profile-save');
     const accountMessage=document.getElementById('account-message');
     const historyList=document.getElementById('history-list');
+    const telegramLoginBox=document.getElementById('telegram-login-box');
+    const telegramLoginWidget=document.getElementById('telegram-login-widget');
+    const accountAuthContent=document.getElementById('account-auth-content');
 
 
-    // Address modal
-    const addrModal=document.getElementById('address-modal');
-    const addrClose=document.getElementById('addr-close');
-    const addrCancel=document.getElementById('addr-cancel');
-    const addrConfirm=document.getElementById('addr-confirm');
+    // Inline customer/address fields
     const addrInput=document.getElementById('addr-input');
+    const deliveryAddressField=document.getElementById('delivery-address-field');
+    const mapTools=document.querySelector('#delivery-options .map-tools');
     const nameInput=document.getElementById('name-input');
     const phoneInput=document.getElementById('phone-input');
-    const addrTitle=document.getElementById('addr-title');
-    const addrNote=document.getElementById('addr-note');
     const mapToggle=document.getElementById('map-toggle');
     const geoBtn=document.getElementById('geo-btn');
     const mapWrap=document.getElementById('map-wrap');
     const mapBox=document.getElementById('map');
     const mapSearch=document.getElementById('map-search');
     const mapClose=document.getElementById('map-close');
+    const mapRequired=document.getElementById('map-required');
+    const openTimeBtn=document.getElementById('open-time');
+    const cashPayment=document.getElementById('cash-payment');
+    const cashPaymentLabel=document.getElementById('cash-payment-label');
+    const paymentQrModal=document.getElementById('payment-qr-modal');
+    const paymentQrImage=document.getElementById('payment-qr-image');
+    const paymentQrTotal=document.getElementById('payment-qr-total');
+    const paymentQrSave=document.getElementById('payment-qr-save');
+    const paymentPaid=document.getElementById('payment-paid');
+    const paymentQrCancel=document.getElementById('payment-qr-cancel');
+    let pendingPromptPayPayload=null;
+    let pendingPromptPayDataUrl='';
 
     // Time modal
     const timeModal=document.getElementById('time-modal');
@@ -771,23 +832,12 @@
 
     function openClosedModal(){ closedModal.classList.add('active'); }
     function closeClosedModal(){ closedModal.classList.remove('active'); }
-    closedOk.onclick = () => {
+    closedOk.onclick = async () => {
       closeClosedModal();
       if (payloadPendingForClose) {
-        try {
-          if (window.Telegram && Telegram.WebApp) {
-            Telegram.WebApp.sendData(JSON.stringify(payloadPendingForClose));
-          }
-          alert(translations[language].thanks);
-          if (window.Telegram && Telegram.WebApp) {
-            Telegram.WebApp.close();
-          }
-        }
-        catch(e) {
-          console.error("sendData error:", e);
-          alert(translations[language].error);
-        }
+        const payload = payloadPendingForClose;
         payloadPendingForClose = null;
+        await sendOrderPayload(payload);
       }
     };
     closedX.onclick  = closeClosedModal;
@@ -796,17 +846,24 @@
     /* ==== helpers ==== */
     const slug = s => s.toLowerCase().replace(/\s+/g,'-');
     const validPhone = p => /^\+66\d{9,10}$/.test(p);
+    function scheduledAtLeastOneHourAway(){
+      if(orderState.when!=='scheduled') return true;
+      const target = new Date(`${todayISO()}T${orderState.hour}:${orderState.minute}:00+07:00`).getTime();
+      return Number.isFinite(target) && target >= Date.now() + 60*60*1000;
+    }
     const canCheckout = ()=>{
       const hasItems = Object.keys(cart).length>0;
-      const hasContact = customer.address && validPhone(customer.phone);
-      const timeOk = (orderState.when==='asap') || (orderState.hour && orderState.minute);
-      return hasItems && hasContact && timeOk;
+      const contactOk = Boolean((customer.name || '').trim()) && validPhone(customer.phone);
+      const fulfillmentOk = fulfillmentType === 'PICKUP'
+        ? contactOk
+        : (contactOk && Boolean((customer.address || '').trim()) && customer.location && Number.isFinite(customer.location.lat) && Number.isFinite(customer.location.lng));
+      return accountState.ready && hasItems && fulfillmentOk && scheduledAtLeastOneHourAway();
     };
     const itemsTotal = ()=> Object.values(cart).reduce((s,i)=> s + i.qty*i.price, 0);
 
     function updateDeliveryFee(){
-      const fee = parseInt(districtSelect.value||"0",10)||0;
-      deliveryFee = fee;
+      const feeMap={CENTRAL_KATHU:50,BASE_UP_TOWN:0,KATA_KARON:150,RAWAI:150,BANG_TAO:200,SURIN:200,CHALONG:100,PATONG:100,KAMALA:150};
+      deliveryFee = fulfillmentType === 'PICKUP' ? 0 : (feeMap[districtSelect.value] ?? 0);
       deliveryFeeEl.textContent = deliveryFee;
     }
 
@@ -882,35 +939,19 @@
     }
 
     function renderAddrSummary(){
-      if(customer.address){
-        const t=translations[language];
+      const t=translations[language];
+      const hasContact = Boolean((customer.name||'').trim() && validPhone(customer.phone));
+      const shouldShow = fulfillmentType === 'PICKUP' ? hasContact : Boolean(customer.address);
+      if(shouldShow){
         addrSummary.style.display='';
-        const url = buildAddressUrl();
-
-        const addressRow = document.createElement('div');
-        const addressStrong = document.createElement('strong');
-        addressStrong.textContent = `${t.address}:`;
-        const addressLink = document.createElement('a');
-        addressLink.href = url;
-        addressLink.target = '_blank';
-        addressLink.rel = 'noopener noreferrer';
-        addressLink.textContent = customer.address;
-        addressRow.append(addressStrong, document.createTextNode(' '), addressLink);
-
-        const nameRow = document.createElement('div');
-        const nameStrong = document.createElement('strong');
-        nameStrong.textContent = `${t.name}:`;
-        nameRow.append(nameStrong, document.createTextNode(` ${customer.name || ''}`));
-
-        const phoneRow = document.createElement('div');
-        const phoneStrong = document.createElement('strong');
-        phoneStrong.textContent = `${t.phone}:`;
-        phoneRow.append(phoneStrong, document.createTextNode(` ${customer.phone || ''}`));
-
-        addrSummary.replaceChildren(addressRow, nameRow, phoneRow);
+        const addressLine = fulfillmentType === 'PICKUP'
+          ? `<div><strong>Получение:</strong> Самовывоз</div>`
+          : `<div><strong>${t.address}:</strong> <a href="${buildAddressUrl()}" target="_blank" rel="noopener">${customer.address}</a></div>`;
+        addrSummary.innerHTML= addressLine +
+          `<div><strong>${t.name}:</strong> ${customer.name||''}</div>` +
+          `<div><strong>${t.phone}:</strong> ${customer.phone||''}</div>`;
       }else{
         addrSummary.style.display='none';
-        addrSummary.replaceChildren();
       }
     }
     function syncCheckoutBtn(){ checkoutBtn.disabled=!canCheckout(); }
@@ -921,8 +962,7 @@
       heroText.textContent = t.delivery;
       welcomeText.textContent = t.welcome;
       myOrderLabel.textContent = t.myOrder;
-      openAddrBtn.textContent = t.specifyAddress;
-      deliveryPill.textContent = '📦 ' + t.deliveryPill;
+      deliveryPill.textContent = fulfillmentType === 'PICKUP' ? '🥡 Самовывоз' : '📦 ' + t.deliveryPill;
       deliveryCostRow.firstChild.textContent = t.deliveryCost + ': ';
       dishesTotalRow.firstChild.textContent = t.dishesTotal + ': ';
       grandTotalRow.firstChild.textContent = t.totalToPay + ': ';
@@ -930,18 +970,12 @@
       districtLabel.textContent = t.districtLabel;
       payLabel.textContent = t.payLabel;
 
-      // addr modal
-      addrTitle.textContent = t.addrModal.title;
-      addrClose.textContent = t.addrModal.close;
-      addrCancel.textContent = t.addrModal.cancel;
-      addrConfirm.textContent = t.addrModal.confirm;
       addrInput.placeholder = t.addrModal.addrPh;
       nameInput.placeholder = t.addrModal.namePh;
       phoneInput.placeholder = t.addrModal.phonePh;
-      mapToggle.textContent = t.addrModal.mapBtn;
+      mapToggle.textContent = language==='ru' ? '📍 Поставить точку на карте' : '📍 Pick point on map';
       geoBtn.textContent = t.addrModal.geoBtn;
       mapSearch.placeholder = t.addrModal.searchPh;
-      addrNote.textContent = t.addrModal.note;
       mapClose.title = t.addrModal.hideMap;
       mapClose.setAttribute('aria-label', t.addrModal.hideMap);
 
@@ -956,11 +990,22 @@
       commentInput.placeholder = t.commentPh;
 
       langToggle.textContent = language==="ru" ? "🇺🇸 EN" : "🇷🇺 RU";
+      if(accountState.ready){
+        accountOpen.textContent = language === 'ru' ? '👤 Личный кабинет' : '👤 Account';
+        accountOpen.classList.remove('login-mode');
+      }else{
+        accountOpen.textContent = language === 'ru' ? '✈ Войти через Telegram' : '✈ Sign in with Telegram';
+        accountOpen.classList.add('login-mode');
+      }
 
       renderCats(); renderMenu(); renderCartItems(); renderAddrSummary(); updateTotals();
       saveState();
     }
 
+
+    const launchParams = new URLSearchParams(window.location.search);
+    const signedUserToken = launchParams.get('u') || launchParams.get('tg_user') || '';
+    const signedUserSignature = launchParams.get('s') || launchParams.get('tg_sig') || '';
 
     function telegramInitData(){
       try {
@@ -981,26 +1026,23 @@
         options.headers || {}
       );
 
-      // Для KeyboardButton WebApp bot.py передаёт подписанные u/s.
-      // Используем их первыми, чтобы сервер получил именно Telegram ID
-      // пользователя, для которого была создана кнопка.
-      if(hasSignedLaunchAuth()){
+      // При запуске из inline/menu button Telegram передаёт initData.
+      if(initData){
+        headers['X-Telegram-Init-Data'] = initData;
+      }
+      // При запуске через KeyboardButton WebApp initData пустой.
+      // В этом случае бот добавляет в URL подписанный токен пользователя.
+      else if(hasSignedLaunchAuth()){
         headers['X-Miniapp-User-Token'] = signedUserToken;
         headers['X-Miniapp-Signature'] = signedUserSignature;
-      }else if(initData){
-        headers['X-Telegram-Init-Data'] = initData;
-      }else{
-        throw new Error('Отправьте боту /start и откройте меню новой кнопкой');
       }
+      // В обычном браузере запрос идёт с cookie-сессией Telegram-аккаунта.
 
-      console.log('[API]', options.method || 'GET', url, {
-        signedAuth: hasSignedLaunchAuth(),
-        telegramInitData: Boolean(initData)
-      });
+      console.log('[API]', options.method || 'GET', url);
 
       const response = await fetch(
         url,
-        Object.assign({}, options, {headers, cache:'no-store'})
+        Object.assign({}, options, {headers})
       );
 
       const data = await response.json().catch(()=>(
@@ -1021,6 +1063,9 @@
       accountState.profile = data.profile || {};
       accountState.loyalty = data.loyalty || {totalSpend:0,cashbackPercent:0,balance:0,maxRedeemPercent:20,ordersCount:0};
       accountState.orders = data.orders || [];
+
+      accountOpen.textContent = language === 'ru' ? '👤 Личный кабинет' : '👤 Account';
+      accountOpen.classList.remove('login-mode');
 
       const p = accountState.profile;
       const telegramFullName = [p.telegramFirstName, p.telegramLastName].filter(Boolean).join(' ').trim();
@@ -1093,19 +1138,14 @@
         const head=document.createElement('div'); head.className='history-head';
         const left=document.createElement('div');
         const date=new Date(order.created_at);
-        const orderTitle=document.createElement('strong'); orderTitle.textContent=`Заказ №${String(order.id||'')}`;
-        const orderDate=document.createElement('div'); orderDate.className='muted'; orderDate.textContent=date.toLocaleString('ru-RU');
-        left.append(orderTitle,orderDate);
+        left.innerHTML=`<strong>Заказ №${order.id}</strong><div class="muted">${date.toLocaleString('ru-RU')}</div>`;
         const total=document.createElement('strong'); total.textContent=`${order.total} ฿`;
         head.append(left,total);
         const itemsWrap=document.createElement('div'); itemsWrap.className='history-items';
         (order.items||[]).forEach(item=>{
           const row=document.createElement('div'); row.className='history-item';
           const img=document.createElement('img'); img.src=item.img || findCurrentMenuItem(item.name)?.img || '/images/logo.jpg'; img.alt=item.name;
-          const text=document.createElement('div');
-          const itemTitle=document.createElement('strong'); itemTitle.textContent=String(item.name||'');
-          const itemMeta=document.createElement('div'); itemMeta.className='muted'; itemMeta.textContent=`${Number(item.qty)||0} × ${Number(item.price)||0} ฿`;
-          text.append(itemTitle,itemMeta);
+          const text=document.createElement('div'); text.innerHTML=`<strong>${item.name}</strong><div class="muted">${item.qty} × ${item.price} ฿</div>`;
           const sum=document.createElement('div'); sum.textContent=`${item.qty*item.price} ฿`;
           row.append(img,text,sum); itemsWrap.append(row);
         });
@@ -1127,21 +1167,36 @@
         customer.address=accountState.profile.address||customer.address;
       }
       renderCartItems(); renderAddrSummary(); updateTotals(); closeAccountModal();
-      if(!customer.address || !validPhone(customer.phone)){
-        openAddressModal();
-        return;
-      }
+      if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
+      if(!canCheckout()){ alert(language==='ru' ? 'Заполните данные заказа и поставьте точку доставки на карте.' : 'Complete the order details and place the delivery point on the map.'); return; }
       submitOrder();
+    }
+
+    async function renderTelegramLogin(){
+      telegramLoginBox.style.display='flex';
+      accountModal.querySelectorAll('.account-auth-only').forEach(el=>{ el.style.display='none'; });
+      telegramLoginWidget.textContent = language === 'ru'
+        ? 'Откройте меню через Telegram-бота Smoke Factory. Авторизация произойдёт автоматически.'
+        : 'Open this menu from the Smoke Factory Telegram bot. Authorization will happen automatically.';
+    }
+
+    function showAuthenticatedAccount(){
+      telegramLoginBox.style.display='none';
+      accountModal.querySelectorAll('.account-auth-only').forEach(el=>{ el.style.removeProperty('display'); });
     }
 
     async function bootstrapAccount(){
       try{
         const sessionKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         const data = await apiRequest('/api/bootstrap',{method:'POST',body:JSON.stringify({sessionKey})});
+        showAuthenticatedAccount();
         applyAccountData(data);
       }catch(error){
         console.warn('Account bootstrap:',error.message);
-        accountMessage.textContent=error.message;
+        accountOpen.textContent = language === 'ru' ? '✈ Войти через Telegram' : '✈ Sign in with Telegram';
+        accountOpen.classList.add('login-mode');
+        accountMessage.textContent='Войдите через Telegram, чтобы оформить заказ, открыть бонусы и историю заказов.';
+        await renderTelegramLogin();
       }
     }
 
@@ -1268,8 +1323,8 @@
       "Основные блюда": "/images/befstroganof.jpeg",
       "Салаты": "/images/salat cezar.jpeg",
       "Гриль": "/images/kebab pork-beef1.jpeg",
-      "Заморозка": "/images/pelmeni 1kg.jpeg",
       "Копчение": "/images/rebrokop.jpeg",
+      "30 дней неодинаковой еды": "/images/meal-of-the-day-promo.png",
     };
 
     function renderCats(){
@@ -1345,6 +1400,65 @@
         title.id='cat-'+slug(cat);
         title.textContent = translations[language].categories[cat] || cat;
         wrap.appendChild(title);
+
+        if(cat === '30 дней неодинаковой еды'){
+          const promo=document.createElement('div');
+          promo.className='subscription-promo';
+          promo.innerHTML = language === 'ru' ? `
+            <div class="subscription-promo-grid">
+              <div class="subscription-promo-panel subscription-promo-copy">
+                <h3>30 дней еды без хлопот</h3>
+                <p>Готовим каждый день из свежих продуктов и экономим ваше время и бюджет. На каждый выбранный день — разные сытные обеды: без закупок, готовки и одинаковой еды всю неделю.</p>
+                <div class="subscription-facts">
+                  <div class="subscription-fact"><b>от 250 ฿</b><span>за обед</span></div>
+                  <div class="subscription-fact"><b>60+</b><span>блюд</span></div>
+                  <div class="subscription-fact"><b>7 / 14 / 30</b><span>дней</span></div>
+                </div>
+                <p><b>30 дней — 7 500 ฿.</b> Подписка оформляется только после входа в личный кабинет. Можно выбрать доставку Grab или самовывоз и менять время каждого дня.</p>
+                <a class="subscription-promo-cta" href="https://meal-point.com" target="_blank" rel="noopener">Выбрать дни и блюда</a>
+              </div>
+              <div class="subscription-promo-panel subscription-promo-image-panel">
+                <img class="subscription-promo-img" src="/images/meal-of-the-day-promo.png" alt="30 дней еды без хлопот">
+              </div>
+              <div class="subscription-promo-panel subscription-showcase-panel">
+                <div class="subscription-showcase" aria-label="Как выглядит подписка MealPoint">
+                  <div class="subscription-box-stack">
+                    <img src="/subscription-showcase/box-open.jpg" alt="Открытая коробка с первым, вторым блюдом и компотом">
+                    <img src="/subscription-showcase/box-closed.jpg" alt="Фирменная коробка 30 дней неодинаковой еды">
+                  </div>
+                  <img class="subscription-showcase-fridge" src="/subscription-showcase/fridge.jpg" alt="Фирменный холодильник Smoke Factory BBQ с коробками MealPoint">
+                </div>
+              </div>
+            </div>` : `
+            <div class="subscription-promo-grid">
+              <div class="subscription-promo-panel subscription-promo-copy">
+                <h3>30 days of different meals</h3>
+                <p>Freshly cooked every day. Different filling meals for each selected day — no shopping, cooking, or eating the same food all week.</p>
+                <div class="subscription-facts">
+                  <div class="subscription-fact"><b>from 250 ฿</b><span>per meal</span></div>
+                  <div class="subscription-fact"><b>60+</b><span>dishes</span></div>
+                  <div class="subscription-fact"><b>7 / 14 / 30</b><span>days</span></div>
+                </div>
+                <p><b>30 days — 7,500 ฿.</b> Sign in to your account to subscribe. Choose Grab delivery or pickup and change the time for each day.</p>
+                <a class="subscription-promo-cta" href="https://meal-point.com" target="_blank" rel="noopener">Choose days and meals</a>
+              </div>
+              <div class="subscription-promo-panel subscription-promo-image-panel">
+                <img class="subscription-promo-img" src="/images/meal-of-the-day-promo.png" alt="30 days of meals">
+              </div>
+              <div class="subscription-promo-panel subscription-showcase-panel">
+                <div class="subscription-showcase" aria-label="MealPoint subscription presentation">
+                  <div class="subscription-box-stack">
+                    <img src="/subscription-showcase/box-open.jpg" alt="Open meal box with soup, main course and compote">
+                    <img src="/subscription-showcase/box-closed.jpg" alt="Branded 30 days of different meals box">
+                  </div>
+                  <img class="subscription-showcase-fridge" src="/subscription-showcase/fridge.jpg" alt="Smoke Factory BBQ branded refrigerator with MealPoint boxes">
+                </div>
+              </div>
+            </div>`;
+          wrap.appendChild(promo);
+          menuRoot.appendChild(wrap);
+          return;
+        }
 
         const grid=document.createElement('div'); grid.className='menu-grid';
         items.forEach(item=>{
@@ -1429,52 +1543,64 @@
       syncCheckoutBtn();
     }
 
-    /* ==== Address Modal ==== */
-    function openAddressModal(){
-      if(!customer.address){ addrInput.value=""; }
-      if(!customer.name){ nameInput.value=""; }
-      if(!customer.phone){ phoneInput.value=""; }
-
-      addrConfirm.disabled = !canConfirmAddr();
-      addrModal.classList.add('active');
-      addrInput.focus();
+    /* ==== Delivery / pickup fields ==== */
+    function syncFulfillmentUI(){
+      const pickup = fulfillmentType === 'PICKUP';
+      fulfillmentPickup.classList.toggle('active', pickup);
+      fulfillmentDelivery.classList.toggle('active', !pickup);
+      deliveryOptions.style.display = pickup ? 'none' : '';
+      deliveryCostRow.style.display = pickup ? 'none' : '';
+      deliveryPill.textContent = pickup ? '🥡 Самовывоз' : '📦 ' + translations[language].deliveryPill;
+      cashPayment.disabled = !pickup;
+      cashPaymentLabel.classList.toggle('disabled', !pickup);
+      if(!pickup && cashPayment.checked){
+        const prompt=document.querySelector('input[name="payment"][value="PromptPay"]');
+        if(prompt) prompt.checked=true;
+      }
+      updateTimeButton();
+      updateTotals();
+      renderAddrSummary();
     }
-    function closeAddressModal(){ addrModal.classList.remove('active'); }
-    function canConfirmAddr(){
-      const addr=addrInput.value.trim();
-      const phone='+66'+(phoneInput.value||'').replace(/\D/g,'');
-      return addr.length>3 && /^\+66\d{9,10}$/.test(phone);
+    function setFulfillment(type){
+      fulfillmentType = type === 'PICKUP' ? 'PICKUP' : 'DELIVERY';
+      syncFulfillmentUI();
     }
-    function confirmAddress(){
-      customer.address = addrInput.value.trim();
+    function syncInlineCustomer(){
       customer.name = nameInput.value.trim();
-      customer.phone = '+66' + (phoneInput.value||'').replace(/\D/g,'');
-      closeAddressModal();
-      openTimeModal();
-      renderAddrSummary(); updateTotals();
+      const digits=(phoneInput.value||'').replace(/\D/g,'').slice(0,10);
+      phoneInput.value=digits;
+      customer.phone = '+66' + digits;
+      if(fulfillmentType==='DELIVERY') customer.address = addrInput.value.trim();
+      renderAddrSummary();
+      syncCheckoutBtn();
     }
-    document.getElementById('open-address').onclick=openAddressModal;
-    addrClose.onclick=closeAddressModal; addrCancel.onclick=closeAddressModal; addrConfirm.onclick=confirmAddress;
-    addrModal.addEventListener('click',e=>{ if(e.target===addrModal) closeAddressModal(); });
-    [addrInput,nameInput,phoneInput].forEach(el=>{
-      el.addEventListener('input', ()=>{
-        if(el===phoneInput){ phoneInput.value=phoneInput.value.replace(/\D/g,'').slice(0,10); }
-        addrConfirm.disabled=!canConfirmAddr();
-      });
-    });
+    [addrInput,nameInput,phoneInput].forEach(el=>el.addEventListener('input',syncInlineCustomer));
+    function updateTimeButton(){
+      const label = orderState.when==='scheduled' ? `${orderState.hour}:${orderState.minute}` : (language==='ru' ? 'ближайшее' : 'soonest');
+      openTimeBtn.textContent = (language==='ru' ? '⏰ Время: ' : '⏰ Time: ') + label;
+    }
+    openTimeBtn.addEventListener('click',openTimeModal);
 
     /* ==== Google Maps ==== */
-    const GOOGLE_MAPS_API_KEY = "AIzaSyBWF8CVNlAbdhdi6JL2ZJnwsQ_igxGNE5c"; // лучше вынести и ограничить по домену
+    let GOOGLE_MAPS_API_KEY = "";
+
+    async function getGoogleMapsBrowserKey(){
+      if(GOOGLE_MAPS_API_KEY) return GOOGLE_MAPS_API_KEY;
+      const config = await fetch('/api/config', {cache:'no-store'}).then(r=>r.json());
+      GOOGLE_MAPS_API_KEY = String(config.googleMapsBrowserKey || '');
+      if(!GOOGLE_MAPS_API_KEY) throw new Error('Google Maps key is not configured');
+      return GOOGLE_MAPS_API_KEY;
+    }
 
     let mapsLoaded = false;
     let map = null, marker = null, geocoder = null, autocomplete = null;
 
-    function loadGoogleMaps() {
+    async function loadGoogleMaps() {
+      if (window.google && google.maps) return;
+      const apiKey = await getGoogleMapsBrowserKey();
       return new Promise((resolve, reject) => {
-        if (window.google && google.maps) return resolve();
-
         const s = document.createElement("script");
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+        s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
         s.async = true;
         s.defer = true;
         s.onload = resolve;
@@ -1523,10 +1649,12 @@
       geocoder.geocode({ location: latLng }, (results, status) => {
         if (status === "OK" && results && results[0]) {
           addrInput.value = results[0].formatted_address;
+          customer.address = results[0].formatted_address;
         } else {
           console.log("Geocode failed:", status, results);
         }
-        addrConfirm.disabled = !canConfirmAddr();
+        renderAddrSummary();
+        syncCheckoutBtn();
       });
     }
 
@@ -1615,7 +1743,12 @@
     timeClose.onclick = closeTimeModal;
     timeCancel.onclick = closeTimeModal;
     timeConfirm.onclick = ()=>{
+      if(orderState.when==='scheduled' && !scheduledAtLeastOneHourAway()){
+        alert(language==='ru' ? 'Можно выбрать время не раньше чем через 1 час.' : 'Selected time must be at least 1 hour from now.');
+        return;
+      }
       closeTimeModal();
+      updateTimeButton();
       syncCheckoutBtn();
     };
     timeModal.addEventListener('click',e=>{ if(e.target===timeModal) closeTimeModal(); });
@@ -1686,95 +1819,158 @@
       });
 
       lines.push(`Сумма блюд: ${baseItemsTotal} ฿`);
-      lines.push(`Доставка: ${payload.delivery} ฿`);
+      lines.push(payload.fulfillmentType === 'PICKUP' ? 'Получение: Самовывоз' : `Доставка: ${payload.delivery} ฿`);
       if (payload.bonusRequested) lines.push(`Использовано бонусов: -${payload.bonusRequested} ฿`);
       lines.push(`Итого: ${payload.total} ฿`);
       lines.push(`Оплата: ${payload.payMethod}`);
       lines.push(`Телефон: ${payload.phone}`);
       lines.push(`Имя: ${payload.name}`);
-      lines.push(`Адрес: ${payload.address_plain || payload.address}`);
+      if(payload.fulfillmentType !== 'PICKUP') lines.push(`Адрес: ${payload.address_plain || payload.address}`);
       if (payload.comment) lines.push(`Комментарий: ${payload.comment}`);
       lines.push(`Когда: ${payload.orderWhen === "asap" ? "Ближайшее" : payload.orderTime}`);
       return lines.join("\n");
     }
 
-    // Финальная отправка заказа (учитывает "мы закрыты")
-    function finalizeOrderSend(payload){
-      const closed = isClosedBangkok();
+    async function sendOrderPayload(payload){
+      try {
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = language==='ru' ? 'Отправляем…' : 'Sending…';
+
+        if (!(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.sendData === 'function')) {
+          throw new Error(language==='ru'
+            ? 'Заказ можно отправить только из Telegram Mini App. Откройте меню через бота.'
+            : 'The order can only be sent from the Telegram Mini App. Open the menu from the bot.');
+        }
+
+        // Весь заказ уходит в действующий tgfoodbot.
+        // Бот сам сохраняет заказ, считает ETA, отправляет его на кухню и в чековую программу.
+        Telegram.WebApp.sendData(JSON.stringify(payload));
+
+        // sendData обычно закрывает Mini App автоматически. Это резерв на клиентах, где окно остаётся открытым.
+        setTimeout(()=>{
+          try { Telegram.WebApp.close(); } catch(_) {}
+        }, 250);
+      } catch(e){
+        console.error('Mini App order send error:', e);
+        alert((e && e.message) || translations[language].error);
+        checkoutBtn.textContent = translations[language].placeOrder;
+        syncCheckoutBtn();
+      }
+    }
+
+    async function finalizeOrderSend(payload){
+      const closed = isClosedBangkok(payload.orderDate, payload.orderWhen==='scheduled' ? payload.orderTime : null);
       if (closed){
         payloadPendingForClose = payload;
         openClosedModal();
         return;
       }
-      try {
-        if (window.Telegram && Telegram.WebApp) {
-          Telegram.WebApp.sendData(JSON.stringify(payload));
-        }
-        alert(translations[language].thanks);
-        if (window.Telegram && Telegram.WebApp) {
-          Telegram.WebApp.close();
-        }
-      } catch(e){
-        console.error("sendData error:", e);
-        alert(translations[language].error);
-      }
+      await sendOrderPayload(payload);
     }
 
-    /* ==== Submit Order ==== */
+    function closePromptPayModal(){
+      paymentQrModal.classList.remove('active');
+      pendingPromptPayPayload=null;
+      pendingPromptPayDataUrl='';
+      paymentQrImage.removeAttribute('src');
+    }
+    paymentQrCancel.addEventListener('click',closePromptPayModal);
+    paymentQrModal.addEventListener('click',e=>{if(e.target===paymentQrModal) closePromptPayModal();});
+    paymentQrSave.addEventListener('click',async()=>{
+      if(!pendingPromptPayDataUrl) return;
+      try{
+        const blob=await (await fetch(pendingPromptPayDataUrl)).blob();
+        const file=new File([blob],`SmokeFactory-PromptPay-${pendingPromptPayPayload?.total||0}.png`,{type:'image/png'});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file],title:'PromptPay QR'});
+        }else{
+          const a=document.createElement('a'); a.href=pendingPromptPayDataUrl; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
+        }
+      }catch(e){ console.error(e); alert(language==='ru'?'Не удалось сохранить QR':'Could not save QR'); }
+    });
+    paymentPaid.addEventListener('click',async()=>{
+      if(!pendingPromptPayPayload) return;
+      const payload=pendingPromptPayPayload;
+      paymentQrModal.classList.remove('active');
+      pendingPromptPayPayload=null;
+      await finalizeOrderSend(payload);
+    });
+
+    async function showPromptPay(payload){
+      try{
+        checkoutBtn.disabled=true;
+        checkoutBtn.textContent=language==='ru'?'Создаём QR…':'Creating QR…';
+        const data=await apiRequest('/api/promptpay/qr',{
+          method:'POST',
+          body:JSON.stringify({amount:payload.total})
+        });
+        pendingPromptPayPayload=payload;
+        pendingPromptPayDataUrl=data.dataUrl;
+        paymentQrImage.src=data.dataUrl;
+        paymentQrTotal.textContent=`${payload.total} ฿`;
+        paymentQrModal.classList.add('active');
+      }catch(e){ alert((e&&e.message)||'QR error'); }
+      finally{ checkoutBtn.textContent=translations[language].placeOrder; syncCheckoutBtn(); }
+    }
+
     function submitOrder() {
+      if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
+      syncInlineCustomer();
+      if(!canCheckout()){
+        alert(language==='ru' ? 'Заполните имя, телефон и данные получения. Для доставки обязательно поставьте точку на карте.' : 'Complete contact and fulfillment details. A map point is required for delivery.');
+        return;
+      }
+      if(orderState.when==='scheduled' && !scheduledAtLeastOneHourAway()){
+        alert(language==='ru' ? 'Можно выбрать время не раньше чем через 1 час.' : 'Selected time must be at least 1 hour from now.');
+        return;
+      }
+
       const items = {};
-      Object.entries(cart).forEach(([n, i]) => {
-        items[n] = { qty: i.qty, price: i.price };
-      });
-
+      Object.entries(cart).forEach(([n, i]) => { items[n] = { qty: i.qty, price: i.price, img:i.img||'' }; });
       const whenVal = orderState.when;
-      const orderTime = whenVal === 'scheduled' ? `${orderState.hour}:${orderState.minute}` : 'soonest';
-
-      const payMethod = document.querySelector('input[name="payment"]:checked')?.value || 'Thai bank';
+      const orderTime = whenVal === 'scheduled' ? `${orderState.hour}:${orderState.minute}` : '';
+      const payMethod = document.querySelector('input[name="payment"]:checked')?.value || 'PromptPay';
+      if(fulfillmentType==='DELIVERY' && payMethod==='Cash'){
+        alert(language==='ru'?'Cash доступен только при самовывозе.':'Cash is available for pickup only.');
+        return;
+      }
       const comment = (orderState.comment || '').trim();
-
-      const mapUrl = buildAddressUrl();
-
+      const mapUrl = fulfillmentType === 'PICKUP' ? '' : buildAddressUrl();
+      const selectedDistrict = fulfillmentType==='PICKUP' ? 'PICKUP' : districtSelect.value;
       const payload = {
         items,
         phone: customer.phone,
         name: customer.name,
-        address: mapUrl,
-        address_plain: customer.address || '',
+        address: fulfillmentType === 'PICKUP' ? 'Самовывоз Smoke Factory BBQ' : mapUrl,
+        address_plain: fulfillmentType === 'PICKUP' ? 'Самовывоз' : (customer.address || ''),
         address_url: mapUrl,
-        addressMarkdown: `[Адрес](${mapUrl})`,
-        addressLine: `Адрес: ${mapUrl}`,
+        location: fulfillmentType==='PICKUP' ? null : customer.location,
+        latitude: fulfillmentType==='PICKUP' ? null : customer.location?.lat,
+        longitude: fulfillmentType==='PICKUP' ? null : customer.location?.lng,
+        fulfillmentType,
+        deliveryDistrict:selectedDistrict,
         comment,
-        comments: comment,
-        note: comment,
-        notes: comment,
-        comment_text: comment,
-        commentLine: comment ? `Комментарий: ${comment}` : '',
         delivery: deliveryFee,
         itemsTotal: itemsTotal(),
         bonusRequested: Math.min(bonusApplied, getMaxBonusForCart()),
-        bonus_requested: Math.min(bonusApplied, getMaxBonusForCart()),
-        discountPercent: 0,
-        discountAmount: Math.min(bonusApplied, getMaxBonusForCart()),
-        discount: Math.min(bonusApplied, getMaxBonusForCart()),
         total: Math.max(0, itemsTotal() - Math.min(bonusApplied, getMaxBonusForCart()) + deliveryFee),
-        orderRequestId:
-          (window.crypto && typeof window.crypto.randomUUID === 'function')
-            ? window.crypto.randomUUID()
-            : `order-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        orderRequestId:(window.crypto && typeof window.crypto.randomUUID === 'function') ? window.crypto.randomUUID() : `order-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         orderDate: todayISO(),
         orderTime,
         orderWhen: whenVal,
         payMethod
       };
-
       payload.summary = buildSummaryText(payload);
-      finalizeOrderSend(payload);
+      if(payMethod==='PromptPay') showPromptPay(payload);
+      else finalizeOrderSend(payload);
     }
 
     /* ==== Events & Init ==== */
     const jumpCart=document.getElementById('jump-cart');
     districtSelect.addEventListener('change', ()=>{ updateTotals(); saveState(); });
+    fulfillmentDelivery.addEventListener('click',()=>setFulfillment('DELIVERY'));
+    fulfillmentPickup.addEventListener('click',()=>setFulfillment('PICKUP'));
+    document.querySelectorAll('input[name="payment"]').forEach(r=>r.addEventListener('change',syncCheckoutBtn));
     bonusInput.addEventListener('input', ()=>{
       bonusTouched = true;
       bonusApplied = Math.max(0, Math.floor(Number(bonusInput.value || 0)));
@@ -1826,6 +2022,11 @@
       setTimeout(()=>bootstrapAccount(), 150);
     }
     init();
-  </script>
+  
+    const urlAfterLogin = new URLSearchParams(window.location.search);
+    if(urlAfterLogin.get('account')==='1' || urlAfterLogin.get('telegram_login')==='ok'){
+      setTimeout(()=>{ openAccountModal(); bootstrapAccount(); },100);
+    }
+</script>
 </body>
 </html>

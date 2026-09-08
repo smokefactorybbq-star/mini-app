@@ -1,8 +1,8 @@
 {
   "name": "smoke-factory-mini-app",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "Smoke Factory BBQ Telegram Mini App",
+  "description": "Smoke Factory BBQ Telegram Mini App — same delivery/pickup/PromptPay flow as smokefactorybbq.com",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "express": "^5.1.0",
-    "pg": "^8.16.0"
+    "pg": "^8.16.0",
+    "qrcode": "^1.5.4"
   }
 }

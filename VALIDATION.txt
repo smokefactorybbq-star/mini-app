@@ -1,0 +1,17 @@
+Smoke Factory Mini App delivery build validation
+
+Checked:
+- server.js: node --check OK
+- inline JavaScript from index.html: node --check OK
+- package.json: valid JSON
+- Delivery / Pickup UI present
+- PromptPay / Cash UI present
+- Cash limited to pickup by frontend logic
+- Google Maps point required for delivery by checkout logic
+- Scheduled time minimum 1 hour by checkout logic
+- PromptPay modal contains Save / I paid / receipt text
+- PromptPay payload test: 1.00, 1234.56, 7500.00 THB produce dynamic QR payload with EMV amount tag 54 and recalculated CRC
+- Telegram.WebApp.sendData used after I paid / Cash checkout
+- MealPoint link: https://meal-point.com
+
+Full npm install was not completed in the sandbox because registry access timed out. Railway will install qrcode, express and pg from package.json during build.

@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const express = require("express");
 const path = require("path");
+const QRCode = require("qrcode");
 const { Pool } = require("pg");
 
 console.log("server.js loaded");
@@ -14,6 +15,26 @@ const DATABASE_URL = String(
 
 const BOT_TOKEN = String(
   process.env.TELEGRAM_BOT_TOKEN || ""
+).trim();
+
+const TELEGRAM_BOT_USERNAME = String(
+  process.env.TELEGRAM_BOT_USERNAME || ""
+).replace(/^@/, "").trim();
+
+const GOOGLE_MAPS_BROWSER_KEY = String(
+  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+  process.env.GOOGLE_MAPS_BROWSER_KEY ||
+  process.env.GOOGLE_MAPS_API_KEY ||
+  ""
+).trim();
+
+// Базовый QR компании, считанный из загруженного пользователем PromptPay QR.
+// Можно переопределить через PROMPTPAY_BASE_PAYLOAD без изменения кода.
+const DEFAULT_PROMPTPAY_BASE_PAYLOAD =
+  "00020101021130810016A00000067701011201150107536000315010214KB0000021596470320KPS004KB00000215964731690016A00000067701011301030040214KB0000021596470420KPS004KB00000215964753037645802TH63043C80";
+
+const PROMPTPAY_BASE_PAYLOAD = String(
+  process.env.PROMPTPAY_BASE_PAYLOAD || DEFAULT_PROMPTPAY_BASE_PAYLOAD
 ).trim();
 
 if (!DATABASE_URL) {
@@ -531,6 +552,102 @@ function miniAppAuth(req, res, next) {
       error: error.message
     });
   }
+}
+
+
+/*
+ * PromptPay / Thai QR helpers.
+ * В QR меняется только режим на dynamic и добавляется сумма (EMV tag 54).
+ */
+function parsePromptPayTlv(payload) {
+  const clean = String(payload || "").trim();
+  const out = [];
+  let pos = 0;
+
+  while (pos + 4 <= clean.length) {
+    const tag = clean.slice(pos, pos + 2);
+    const len = Number(clean.slice(pos + 2, pos + 4));
+
+    if (!/^\d{2}$/.test(tag) || !Number.isInteger(len) || len < 0) {
+      throw new Error("INVALID_PROMPTPAY_TLV");
+    }
+
+    const start = pos + 4;
+    const end = start + len;
+    if (end > clean.length) throw new Error("INVALID_PROMPTPAY_LENGTH");
+
+    out.push({ tag, value: clean.slice(start, end) });
+    pos = end;
+    if (tag === "63") break;
+  }
+
+  return out;
+}
+
+function encodePromptPayTlv(tag, value) {
+  const length = Buffer.byteLength(String(value), "utf8");
+  if (length > 99) throw new Error(`TLV_TOO_LONG_${tag}`);
+  return `${tag}${String(length).padStart(2, "0")}${value}`;
+}
+
+function crc16CcittFalse(input) {
+  const bytes = Buffer.from(String(input), "utf8");
+  let crc = 0xffff;
+
+  for (const byte of bytes) {
+    crc ^= byte << 8;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xffff;
+    }
+  }
+
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+
+function buildCompanyPromptPayPayload(amountValue) {
+  const amount = Number(amountValue);
+
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 9999999.99) {
+    throw new Error("INVALID_AMOUNT");
+  }
+
+  const source = parsePromptPayTlv(PROMPTPAY_BASE_PAYLOAD)
+    .filter((part) => part.tag !== "63" && part.tag !== "54");
+
+  let methodSeen = false;
+  const parts = [];
+
+  for (const part of source) {
+    if (part.tag === "01") {
+      parts.push({ tag: "01", value: "12" });
+      methodSeen = true;
+      continue;
+    }
+
+    if (!methodSeen && Number(part.tag) > 1) {
+      parts.push({ tag: "01", value: "12" });
+      methodSeen = true;
+    }
+
+    if (Number(part.tag) > 54 && !parts.some((p) => p.tag === "54")) {
+      parts.push({ tag: "54", value: amount.toFixed(2) });
+    }
+
+    parts.push(part);
+  }
+
+  if (!methodSeen) parts.splice(1, 0, { tag: "01", value: "12" });
+  if (!parts.some((p) => p.tag === "54")) {
+    parts.push({ tag: "54", value: amount.toFixed(2) });
+  }
+
+  parts.sort((a, b) => Number(a.tag) - Number(b.tag));
+  const withoutCrc = parts
+    .map((part) => encodePromptPayTlv(part.tag, part.value))
+    .join("") + "6304";
+
+  return withoutCrc + crc16CcittFalse(withoutCrc);
 }
 
 
@@ -2267,6 +2384,57 @@ app.post(
 
 
 /*
+ * Конфигурация фронтенда Mini App.
+ * Секретов здесь нет: browser key Google должен быть ограничен по домену в Google Cloud.
+ */
+app.get(
+  "/api/config",
+  (req, res) => {
+    return res.json({
+      ok: true,
+      telegramBotUsername: TELEGRAM_BOT_USERNAME,
+      googleMapsBrowserKey: GOOGLE_MAPS_BROWSER_KEY
+    });
+  }
+);
+
+
+/*
+ * Динамический PromptPay QR с суммой заказа.
+ * Доступ только авторизованному Telegram-пользователю Mini App.
+ */
+app.post(
+  "/api/promptpay/qr",
+  miniAppAuth,
+  async (req, res) => {
+    try {
+      const amount = Number(req.body?.amount);
+      const payload = buildCompanyPromptPayPayload(amount);
+      const dataUrl = await QRCode.toDataURL(payload, {
+        type: "image/png",
+        width: 720,
+        margin: 2,
+        errorCorrectionLevel: "M"
+      });
+
+      return res.json({
+        ok: true,
+        amount: Number(amount.toFixed(2)),
+        payload,
+        dataUrl
+      });
+    } catch (error) {
+      console.error("POST /api/promptpay/qr:", error);
+      return res.status(400).json({
+        ok: false,
+        error: "Не удалось создать QR для оплаты"
+      });
+    }
+  }
+);
+
+
+/*
  * Неизвестные API-маршруты
  * возвращают JSON.
  */
@@ -2295,6 +2463,20 @@ app.use(
  * Мы НЕ публикуем весь __dirname, поэтому server.js, package.json,
  * .env и другие серверные файлы недоступны через HTTP.
  */
+app.use(
+  "/subscription-showcase",
+  express.static(
+    path.join(__dirname, "subscription-showcase"),
+    {
+      etag: true,
+      maxAge: "1h",
+      dotfiles: "deny",
+      fallthrough: false
+    }
+  )
+);
+
+
 app.use(
   "/images",
   express.static(
