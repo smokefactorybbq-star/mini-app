@@ -3,13 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <title>Smoke Factory BBQ — Меню</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
   <style>
     :root{--accent:#16a34a;--danger:#dc2626;--bg:#ffffff;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--card:#f8fafc;--mobile-bar-h:84px}
     *{box-sizing:border-box}
-    html,body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    html{
+      margin:0;
+      overflow-x:hidden;
+      background:var(--bg);
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+      overscroll-behavior-y:none;
+    }
+    body{
+      margin:0;
+      width:100%;
+      min-height:100%;
+      overflow-x:hidden;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+      -webkit-overflow-scrolling:touch;
+      -webkit-tap-highlight-color:transparent;
+    }
+    button,a,[role="button"]{touch-action:manipulation}
+    input,textarea,select,button{font-family:inherit}
 
     /* header */
     .header-sticky{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border)}
@@ -103,7 +123,7 @@
 
     /* cart */
     .cart-container{position:sticky;top:140px;border:1px solid var(--border);border-radius:22px;background:#fff;padding:0;overflow:hidden;height:fit-content}
-    @media(max-width:768px){.cart-container{top:8px}}
+    @media(max-width:768px){.cart-container{position:static;top:auto}}
     .cart-header{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:#f9fafb}
     .cart-pill{margin-left:auto;border:1px dashed var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
     .cart-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
@@ -125,7 +145,7 @@
     .remove-btn{background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px}
 
     /* inputs */
-    .input{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px}
+    .input{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:16px;line-height:1.25}
     .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:640px){.input-row{grid-template-columns:1fr}}
     .muted{color:var(--muted)}
@@ -137,15 +157,14 @@
     .order-time-button{width:100%;text-align:left;font-weight:800;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer}
     .qr-pay-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
     .qr-pay-img{width:min(390px,82vw);height:auto;max-height:62vh;object-fit:contain;border-radius:12px;background:#fff;border:1px solid var(--border);padding:0}
+    .qr-pay-save{margin-left:auto;display:flex;align-items:center;gap:6px;border:0;background:transparent;color:#2563eb;font-weight:800;cursor:pointer}
     .qr-pay-total{font-size:25px;font-weight:950}
-    .qr-pay-detail{font-size:14px;color:var(--muted);font-weight:800;line-height:1.35}
     .qr-pay-note{font-weight:800;line-height:1.4}
-    .cash-payment-note{margin-top:6px;font-size:12px;color:#b45309;font-weight:800;line-height:1.35}
     .qr-pay-paid{width:100%;max-width:390px;background:#16a34a;color:#fff;border:0;border-radius:14px;padding:15px;font-size:18px;font-weight:950;cursor:pointer;box-shadow:0 8px 20px rgba(22,163,74,.24)}
 
     .phone-wrap{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .phone-prefix{display:flex;align-items:center;padding:0 10px;background:#f1f5f9;border-right:1px solid var(--border)}
-    .phone-input{border:none;flex:1;padding:12px}
+    .phone-input{border:none;flex:1;padding:12px;font-size:16px;line-height:1.25;min-width:0}
     .phone-input:focus{outline:none}
 
     /* modals */
@@ -167,6 +186,24 @@
     .map-box{height:300px;border:1px solid var(--border);border-radius:12px}
     .map-close{position:absolute; left:8px; top:8px;width:36px; height:36px; border-radius:999px;background:#fff; border:1px solid var(--border);display:grid; place-items:center; font-size:20px; line-height:1; cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.1); z-index:500}
     .map-close:hover{ background:#f9fafb }
+
+    /* iPhone / iOS WebView stability.
+       16px inputs prevent Safari auto-zoom. On phones the order block is not sticky,
+       and fixed controls disappear while the software keyboard is open. */
+    @media(max-width:768px){
+      input,textarea,select{font-size:16px !important;line-height:1.25}
+      .header-sticky,.cat-strip-wrap{position:relative;top:auto}
+      .modal-content{max-height:calc(100dvh - 16px)}
+      .account-modal-content{height:100dvh;max-height:100dvh}
+      body.keyboard-open .mobile-progress,
+      body.keyboard-open .mobile-home{display:none !important}
+      body.keyboard-open .header-sticky,
+      body.keyboard-open .cat-strip-wrap{position:relative !important;top:auto !important}
+    }
+    @supports (-webkit-touch-callout:none){
+      html,body{overscroll-behavior-y:none}
+      input,textarea,select{font-size:16px !important}
+    }
 
     /* mobile bottom bar */
     @media(max-width:768px){
@@ -230,7 +267,7 @@
     .repeat-order-btn{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:11px;font-weight:800;cursor:pointer}
     .account-message{min-height:20px;font-size:13px;color:var(--muted)}
     @media(max-width:768px){
-      .account-modal-content{width:100vw;height:100vh;max-height:100vh;border-radius:0}
+      .account-modal-content{width:100vw;height:100dvh;max-height:100dvh;border-radius:0}
       .account-modal-content .modal-body{padding-bottom:calc(env(safe-area-inset-bottom,0) + 24px);scrollbar-gutter:stable}
       .profile-grid{grid-template-columns:1fr}
       .profile-grid .full{grid-column:auto}
@@ -364,7 +401,6 @@
           <label id="cash-payment-label"><input type="radio" id="cash-payment" name="payment" value="Cash"> Cash</label>
           <label><input type="radio" name="payment" value="Банк РФ"> Банк РФ</label>
         </div>
-        <div class="cash-payment-note" id="cash-payment-note">Оплата кэшем возможна только при самовывозе.</div>
 
         <button class="checkout-btn" id="checkout-btn" disabled>Place order</button>
       </div>
@@ -452,17 +488,17 @@
     </div>
   </div>
 
-  <!-- Payment QR Modal: used for PromptPay and Russian bank payments -->
+  <!-- PromptPay Modal: static company QR, closes only after payment confirmation -->
   <div class="modal-backdrop" id="payment-qr-modal">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="payment-qr-title" style="width:min(520px,94vw)">
       <div class="modal-header">
-        <strong id="payment-qr-title">Оплата</strong>
+        <strong id="payment-qr-title">Оплата PromptPay</strong>
+        <button class="qr-pay-save" id="payment-qr-save" type="button">⬇ Сохранить QR</button>
       </div>
       <div class="modal-body qr-pay-card">
-        <img class="qr-pay-img" id="payment-qr-image" src="/images/promptpay-qr.jpg" alt="Payment QR" />
-        <div class="qr-pay-total" id="payment-qr-total">К оплате: 0</div>
-        <div class="qr-pay-detail" id="payment-qr-detail" style="display:none"></div>
-        <div class="qr-pay-note" id="payment-qr-note">После оплаты, пришлите пожалуйста чек</div>
+        <img class="qr-pay-img" id="payment-qr-image" src="/images/promptpay-qr.jpg" alt="PromptPay QR" />
+        <div class="qr-pay-total" id="payment-qr-total">К оплате: 0 ฿</div>
+        <div class="qr-pay-note">После оплаты, пришлите пожалуйста чек</div>
         <button class="qr-pay-paid" id="payment-paid" type="button">Я оплатил!</button>
       </div>
     </div>
@@ -529,6 +565,7 @@
       if (window.Telegram && Telegram.WebApp) {
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
+        try { if (typeof Telegram.WebApp.disableVerticalSwipes === 'function') Telegram.WebApp.disableVerticalSwipes(); } catch(e){}
         try { Telegram.WebApp.MainButton.hide(); } catch(e){}
       }
     } catch (e) {
@@ -543,6 +580,56 @@
       ),
       hasSignedLaunchAuth: Boolean(new URLSearchParams(window.location.search).get('u') || new URLSearchParams(window.location.search).get('tg_user'))
     });
+
+    // iOS keyboard + modal scroll stability. Do not fight Safari with scrollIntoView/scrollTo
+    // while the user types: just hide fixed controls until the keyboard closes.
+    const EDITABLE_SELECTOR = 'input, textarea, select, [contenteditable="true"]';
+    let bodyScrollLockY = 0;
+    let bodyScrollLockDepth = 0;
+
+    document.addEventListener('focusin', (event) => {
+      const target = event.target;
+      if (target && target.matches && target.matches(EDITABLE_SELECTOR)) {
+        document.body.classList.add('keyboard-open');
+      }
+    });
+
+    document.addEventListener('focusout', () => {
+      setTimeout(() => {
+        const active = document.activeElement;
+        if (!(active && active.matches && active.matches(EDITABLE_SELECTOR))) {
+          document.body.classList.remove('keyboard-open');
+        }
+      }, 120);
+    });
+
+    function lockBodyScroll(){
+      bodyScrollLockDepth += 1;
+      if(bodyScrollLockDepth > 1) return;
+      bodyScrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+      const active = document.activeElement;
+      if(active && active.matches && active.matches(EDITABLE_SELECTOR) && typeof active.blur === 'function') active.blur();
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${bodyScrollLockY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function unlockBodyScroll(){
+      if(bodyScrollLockDepth <= 0) return;
+      bodyScrollLockDepth -= 1;
+      if(bodyScrollLockDepth > 0) return;
+      const restoreY = bodyScrollLockY;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      requestAnimationFrame(() => window.scrollTo(0, restoreY));
+    }
 
     /* ==== Categories ==== */
     const CATEGORIES = {
@@ -607,7 +694,7 @@
         address:"Адрес", name:"Имя", phone:"Телефон",
         deliveryCost:"Стоимость доставки", dishesTotal:"Сумма блюд", totalToPay:"Итого к оплате",
         placeOrder:"Оформить заказ", remove:"удалить",
-        districtLabel:"Район доставки", payLabel:"Способ оплаты", cashOnlyPickup:"Оплата кэшем возможна только при самовывозе.",
+        districtLabel:"Район доставки", payLabel:"Способ оплаты",
         categories:{ "Супы":"Супы","Основные блюда":"Основные блюда","Салаты":"Салаты","Гриль":"Гриль","Копчение":"Копчение","30 дней неодинаковой еды":"30 дней неодинаковой еды" },
         addrModal:{title:"Адрес доставки",close:"Закрыть",addrPh:"Адрес доставки",namePh:"Имя",phonePh:"Номер телефона (10 цифр)",note:"Кнопка «Подтвердить» станет активной после ввода адреса и телефона.",cancel:"Отмена",confirm:"Подтвердить",mapBtn:"Выбрать на карте",geoBtn:"Моё местоположение",searchPh:"Поиск на карте (адрес/место)",hideMap:"Скрыть карту"},
         soonest:"Ближайшее", selectTime:"Выбрать время",
@@ -623,7 +710,7 @@
         address:"Address", name:"Name", phone:"Phone",
         deliveryCost:"Delivery cost", dishesTotal:"Dishes total", totalToPay:"Total to pay",
         placeOrder:"Place order", remove:"remove",
-        districtLabel:"Delivery district", payLabel:"Payment method", cashOnlyPickup:"Cash payment is available for pickup only.",
+        districtLabel:"Delivery district", payLabel:"Payment method",
         categories:{ "Супы":"Soups","Основные блюда":"Main dishes","Салаты":"Salads","Гриль":"Grill","Копчение":"Smoked","30 дней неодинаковой еды":"30 days of different meals" },
         addrModal:{title:"Delivery Address",close:"Close",addrPh:"Delivery address",namePh:"Name",phonePh:"Phone number (10 digits)",note:"The «Confirm» button will become active after entering address and phone.",cancel:"Cancel",confirm:"Confirm",mapBtn:"Pick on map",geoBtn:"Use my location",searchPh:"Search on map (address/place)",hideMap:"Hide map"},
         soonest:"Soonest", selectTime:"Select time",
@@ -803,15 +890,13 @@
     const openTimeBtn=document.getElementById('open-time');
     const cashPayment=document.getElementById('cash-payment');
     const cashPaymentLabel=document.getElementById('cash-payment-label');
-    const cashPaymentNote=document.getElementById('cash-payment-note');
     const paymentQrModal=document.getElementById('payment-qr-modal');
-    const paymentQrTitle=document.getElementById('payment-qr-title');
     const paymentQrImage=document.getElementById('payment-qr-image');
     const paymentQrTotal=document.getElementById('payment-qr-total');
-    const paymentQrDetail=document.getElementById('payment-qr-detail');
-    const paymentQrNote=document.getElementById('payment-qr-note');
+    const paymentQrSave=document.getElementById('payment-qr-save');
     const paymentPaid=document.getElementById('payment-paid');
-    let pendingPaymentPayload=null;
+    let pendingPromptPayPayload=null;
+    let pendingPromptPayDataUrl='';
 
     // Time modal
     const timeModal=document.getElementById('time-modal');
@@ -971,7 +1056,6 @@
       checkoutBtn.textContent = t.placeOrder;
       districtLabel.textContent = t.districtLabel;
       payLabel.textContent = t.payLabel;
-      cashPaymentNote.textContent = t.cashOnlyPickup;
 
       addrInput.placeholder = t.addrModal.addrPh;
       nameInput.placeholder = t.addrModal.namePh;
@@ -1111,11 +1195,11 @@
 
     function openAccountModal(){
       accountModal.classList.add('active');
-      document.body.style.overflow='hidden';
+      lockBodyScroll();
     }
     function closeAccountModal(){
       accountModal.classList.remove('active');
-      document.body.style.overflow='';
+      unlockBodyScroll();
     }
 
     function findCurrentMenuItem(name){
@@ -1571,16 +1655,22 @@
       fulfillmentType = type === 'PICKUP' ? 'PICKUP' : 'DELIVERY';
       syncFulfillmentUI();
     }
-    function syncInlineCustomer(){
+    function syncInlineCustomer(renderSummary = true){
       customer.name = nameInput.value.trim();
       const digits=(phoneInput.value||'').replace(/\D/g,'').slice(0,10);
       phoneInput.value=digits;
       customer.phone = '+66' + digits;
       if(fulfillmentType==='DELIVERY') customer.address = addrInput.value.trim();
-      renderAddrSummary();
+      // На iPhone перерисовка summary на каждом символе меняет высоту sticky/cart-блока
+      // и WebKit начинает двигать страницу. Во время ввода меняем только данные/кнопку.
+      if(renderSummary) renderAddrSummary();
       syncCheckoutBtn();
     }
-    [addrInput,nameInput,phoneInput].forEach(el=>el.addEventListener('input',syncInlineCustomer));
+    [addrInput,nameInput,phoneInput].forEach(el=>{
+      el.addEventListener('input',()=>syncInlineCustomer(false));
+      el.addEventListener('change',()=>syncInlineCustomer(true));
+      el.addEventListener('blur',()=>syncInlineCustomer(true));
+    });
     function updateTimeButton(){
       const label = orderState.when==='scheduled' ? `${orderState.hour}:${orderState.minute}` : (language==='ru' ? 'ближайшее' : 'soonest');
       openTimeBtn.textContent = (language==='ru' ? '⏰ Время: ' : '⏰ Time: ') + label;
@@ -1855,9 +1945,6 @@
       lines.push(payload.fulfillmentType === 'PICKUP' ? 'Получение: Самовывоз' : `Доставка: ${payload.delivery} ฿`);
       if (payload.bonusRequested) lines.push(`Использовано бонусов: -${payload.bonusRequested} ฿`);
       lines.push(`Итого: ${payload.total} ฿`);
-      if(payload.payMethod === 'Банк РФ' && Number(payload.rubRate) > 0 && Number(payload.rubTotal) > 0){
-        lines.push(`К оплате в рублях: ${payload.rubTotal} ₽ (курс ${Number(payload.rubRate).toFixed(2)})`);
-      }
       lines.push(`Оплата: ${payload.payMethod}`);
       lines.push(`Телефон: ${payload.phone}`);
       lines.push(`Имя: ${payload.name}`);
@@ -1904,89 +1991,64 @@
       await sendOrderPayload(payload);
     }
 
-    // Fixed company QR images. The modal has no download/save button.
-    function openPaymentQrModal(payload,{title,image,totalText,detailText='',alt='Payment QR'}){
-      pendingPaymentPayload=payload;
-      paymentQrTitle.textContent=title;
-      paymentQrImage.src=image;
-      paymentQrImage.alt=alt;
-      paymentQrTotal.textContent=totalText;
-      paymentQrDetail.textContent=detailText;
-      paymentQrDetail.style.display=detailText ? '' : 'none';
-      paymentQrNote.textContent=language==='ru'
-        ? 'После оплаты, пришлите пожалуйста чек'
-        : 'After payment, please send the receipt';
-      paymentPaid.textContent=language==='ru' ? 'Я оплатил!' : 'I paid!';
+    // PromptPay uses the fixed company QR image. No QR generation and no network request.
+    function openPromptPayModal(payload){
+      const amount=Number(payload && payload.total || 0);
+      if(!Number.isFinite(amount) || amount<=0){
+        alert(language==='ru'?'Некорректная сумма заказа.':'Invalid order total.');
+        return;
+      }
+      pendingPromptPayPayload=payload;
+      pendingPromptPayDataUrl='/images/promptpay-qr.jpg';
+      paymentQrImage.src='/images/promptpay-qr.jpg';
+      paymentQrTotal.textContent=(language==='ru'?'К оплате: ':'Total: ')+amount.toFixed(2)+' ฿';
       paymentQrModal.classList.add('active');
-      document.body.style.overflow='hidden';
+      lockBodyScroll();
     }
 
+    // The payment modal intentionally has no Cancel button, no X and no backdrop-close.
+    paymentQrSave.addEventListener('click',async()=>{
+      try{
+        const response=await fetch('/images/promptpay-qr.jpg',{cache:'no-store'});
+        if(!response.ok) throw new Error('QR_DOWNLOAD_HTTP_'+response.status);
+        const blob=await response.blob();
+        const fileName='SmokeFactory-PromptPay-QR.jpg';
+        if(typeof File!=='undefined'){
+          const file=new File([blob],fileName,{type:blob.type||'image/jpeg'});
+          if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+            await navigator.share({files:[file],title:'PromptPay QR'});
+            return;
+          }
+        }
+        const objectUrl=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=objectUrl;
+        a.download=fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);
+      }catch(e){
+        console.error('Save QR error',e);
+        // Last fallback: open the QR image so the user can save it from the system image viewer.
+        window.open('/images/promptpay-qr.jpg','_blank');
+      }
+    });
+
     paymentPaid.addEventListener('click',async()=>{
-      if(!pendingPaymentPayload) return;
-      const payload=pendingPaymentPayload;
-      pendingPaymentPayload=null;
+      if(!pendingPromptPayPayload) return;
+      const payload=pendingPromptPayPayload;
+      pendingPromptPayPayload=null;
       paymentQrModal.classList.remove('active');
-      document.body.style.overflow='';
+      unlockBodyScroll();
       await finalizeOrderSend(payload);
     });
 
     function showPromptPay(payload){
-      const amount=Number(payload && payload.total || 0);
-      if(!Number.isFinite(amount) || amount<=0){
-        alert(language==='ru'?'Некорректная сумма заказа.':'Invalid order total.');
-        return;
-      }
-      openPaymentQrModal(payload,{
-        title: language==='ru' ? 'Оплата PromptPay' : 'PromptPay payment',
-        image:'/images/promptpay-qr.jpg',
-        totalText:(language==='ru'?'К оплате: ':'Total: ')+amount.toFixed(2)+' ฿',
-        alt:'PromptPay QR'
-      });
+      openPromptPayModal(payload);
     }
 
-    async function fetchRubRate(){
-      const response=await fetch('/api/exchange-rate',{cache:'no-store'});
-      const data=await response.json().catch(()=>({}));
-      if(!response.ok || !data.ok || !Number.isFinite(Number(data.rate)) || Number(data.rate)<=0){
-        throw new Error('RUB_RATE_NOT_SET');
-      }
-      return {
-        rate:Number(data.rate),
-        updatedAt:data.updatedAt || null
-      };
-    }
-
-    async function showRussianBank(payload){
-      const amount=Number(payload && payload.total || 0);
-      if(!Number.isFinite(amount) || amount<=0){
-        alert(language==='ru'?'Некорректная сумма заказа.':'Invalid order total.');
-        return;
-      }
-
-      try{
-        const rateData=await fetchRubRate();
-        const rubTotal=Math.round(amount * rateData.rate);
-        payload.rubRate=rateData.rate;
-        payload.rubTotal=rubTotal;
-        payload.rubRateUpdatedAt=rateData.updatedAt;
-        payload.summary=buildSummaryText(payload);
-
-        openPaymentQrModal(payload,{
-          title: language==='ru' ? 'Оплата Банком РФ' : 'Russian bank payment',
-          image:'/images/rf-bank-qr.jpg',
-          totalText:(language==='ru'?'К оплате: ':'Total: ')+rubTotal+' ₽',
-          detailText:`${amount.toFixed(2)} ฿ × ${rateData.rate.toFixed(2)} = ${rubTotal} ₽`,
-          alt:'Russian bank QR'
-        });
-      }catch(error){
-        console.error('Russian bank rate error:',error);
-        alert(language==='ru'
-          ? 'Курс для оплаты Банком РФ пока не установлен менеджером. Выберите другой способ оплаты.'
-          : 'The Russian bank exchange rate has not been set by the manager yet. Please choose another payment method.');
-      }
-    }
-
-    async function submitOrder() {
+    function submitOrder() {
       if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
       syncInlineCustomer();
       if(!canCheckout()){
@@ -2035,8 +2097,7 @@
       };
       payload.summary = buildSummaryText(payload);
       if(payMethod==='PromptPay') showPromptPay(payload);
-      else if(payMethod==='Банк РФ') await showRussianBank(payload);
-      else await finalizeOrderSend(payload);
+      else finalizeOrderSend(payload);
     }
 
     /* ==== Events & Init ==== */
@@ -2089,7 +2150,6 @@
     function init(){
       loadState();
       setLanguage(language);
-      syncFulfillmentUI();
       renderCats(); renderMenu(); renderCartItems();
       renderAddrSummary();
       fillUIHoursOnce();
