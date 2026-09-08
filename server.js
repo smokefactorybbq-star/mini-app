@@ -822,6 +822,18 @@ async function ensureSchema() {
       telegram_id,
       created_at DESC
     );
+
+
+    /*
+     * Общие настройки Mini App.
+     * Здесь хранится текущий курс RUB, который задаёт менеджер из бота.
+     */
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_by BIGINT
+    );
   `);
 }
 
@@ -1187,6 +1199,193 @@ app.get(
       ok: true,
       googleMapsBrowserKey
     });
+  }
+);
+
+
+/*
+ * Текущий курс для оплаты "Банк РФ".
+ * rate = сколько рублей нужно заплатить за 1 бат.
+ * Например, rate=2.71: 200 ฿ -> 542 ₽.
+ */
+app.get(
+  "/api/exchange-rate",
+  async (req, res) => {
+    try {
+      const result = await pool.query(
+        `
+          SELECT value, updated_at, updated_by
+          FROM app_settings
+          WHERE key = 'rub_rate'
+          LIMIT 1
+        `
+      );
+
+      if (result.rowCount === 0) {
+        return res.status(200).json({
+          ok: true,
+          rate: null,
+          updatedAt: null,
+          updatedBy: null
+        });
+      }
+
+      const row = result.rows[0];
+      const rate = Number(row.value);
+
+      if (!Number.isFinite(rate) || rate <= 0) {
+        return res.status(500).json({
+          ok: false,
+          error: "Invalid stored RUB rate"
+        });
+      }
+
+      return res.status(200).json({
+        ok: true,
+        rate,
+        updatedAt: row.updated_at || null,
+        updatedBy: row.updated_by || null
+      });
+    } catch (error) {
+      console.error("GET /api/exchange-rate:", error);
+      return res.status(500).json({
+        ok: false,
+        error: "Could not load RUB rate"
+      });
+    }
+  }
+);
+
+
+/*
+ * Каноническая строка подписи для bot.py.
+ * bot.py должен собрать точно такую же строку и подписать TELEGRAM_BOT_TOKEN.
+ */
+function exchangeRateSignaturePayload({
+  rate,
+  managerId,
+  timestamp,
+  requestId
+}) {
+  return [
+    Number(rate).toFixed(4),
+    String(managerId),
+    String(timestamp),
+    String(requestId || "")
+  ].join("|");
+}
+
+
+/*
+ * Установка курса менеджером из Telegram-бота.
+ * Обычный пользователь Mini App вызвать этот маршрут не может без HMAC-подписи.
+ */
+app.post(
+  "/api/admin/exchange-rate",
+  async (req, res) => {
+    try {
+      const rate = Number(req.body?.rate);
+      const managerId = Number(req.body?.managerId);
+      const timestamp = Number(req.body?.timestamp);
+      const requestId = String(req.body?.requestId || "")
+        .trim()
+        .slice(0, 250);
+      const receivedSignature = String(
+        req.get("X-Rate-Signature") || ""
+      ).trim();
+
+      if (!Number.isFinite(rate) || rate < 0.1 || rate > 100) {
+        return res.status(400).json({
+          ok: false,
+          error: "Неверный курс"
+        });
+      }
+
+      if (!Number.isSafeInteger(managerId) || managerId <= 0) {
+        return res.status(400).json({
+          ok: false,
+          error: "Неверный ID менеджера"
+        });
+      }
+
+      if (!requestId) {
+        return res.status(400).json({
+          ok: false,
+          error: "Отсутствует requestId"
+        });
+      }
+
+      const now = Math.floor(Date.now() / 1000);
+      if (
+        !Number.isSafeInteger(timestamp) ||
+        Math.abs(now - timestamp) > 300
+      ) {
+        return res.status(401).json({
+          ok: false,
+          error: "Запрос устарел"
+        });
+      }
+
+      const expectedSignature = crypto
+        .createHmac("sha256", BOT_TOKEN)
+        .update(
+          exchangeRateSignaturePayload({
+            rate,
+            managerId,
+            timestamp,
+            requestId
+          })
+        )
+        .digest("hex");
+
+      if (!safeHexEqual(receivedSignature, expectedSignature)) {
+        console.error("[RATE] Invalid signature");
+        return res.status(401).json({
+          ok: false,
+          error: "Неверная подпись запроса"
+        });
+      }
+
+      await pool.query(
+        `
+          INSERT INTO app_settings (
+            key,
+            value,
+            updated_at,
+            updated_by
+          )
+          VALUES (
+            'rub_rate',
+            $1,
+            NOW(),
+            $2
+          )
+          ON CONFLICT (key)
+          DO UPDATE SET
+            value = EXCLUDED.value,
+            updated_at = NOW(),
+            updated_by = EXCLUDED.updated_by
+        `,
+        [String(rate), managerId]
+      );
+
+      console.log("[RATE] RUB rate updated:", {
+        rate,
+        managerId
+      });
+
+      return res.status(200).json({
+        ok: true,
+        rate,
+        managerId
+      });
+    } catch (error) {
+      console.error("POST /api/admin/exchange-rate:", error);
+      return res.status(500).json({
+        ok: false,
+        error: "Не удалось сохранить курс"
+      });
+    }
   }
 );
 

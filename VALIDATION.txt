@@ -1,17 +1,23 @@
-Smoke Factory Mini App delivery build validation
+Smoke Factory Mini App payment update validation
 
 Checked:
 - server.js: node --check OK
 - inline JavaScript from index.html: node --check OK
 - package.json: valid JSON
 - Delivery / Pickup UI present
-- PromptPay / Cash UI present
-- Cash limited to pickup by frontend logic
-- Google Maps point required for delivery by checkout logic
-- Scheduled time minimum 1 hour by checkout logic
-- PromptPay modal contains Save / I paid / receipt text
-- PromptPay payload test: 1.00, 1234.56, 7500.00 THB produce dynamic QR payload with EMV amount tag 54 and recalculated CRC
-- Telegram.WebApp.sendData used after I paid / Cash checkout
-- MealPoint link: https://meal-point.com
+- PromptPay / Cash / Банк РФ UI present
+- Cash is disabled for delivery and limited to pickup
+- Visible note: cash payment is available only for pickup
+- PromptPay uses the existing fixed company QR
+- Банк РФ uses images/rf-bank-qr.jpg supplied by the user
+- Russian-bank QR successfully decoded during validation
+- QR download/save button removed from payment modal
+- GET /api/exchange-rate returns the manager-set RUB rate
+- POST /api/admin/exchange-rate stores the rate with HMAC verification
+- Russian-bank payment calculates RUB as THB total × manager-set rate and rounds to whole rubles
+- Russian-bank payload includes rubRate and rubTotal and rebuilds the order summary
+- Telegram.WebApp.sendData is still used after payment confirmation / Cash checkout
+- Existing Cash delivery guard remains in submitOrder
 
-Full npm install was not completed in the sandbox because registry access timed out. Railway will install qrcode, express and pg from package.json during build.
+Note:
+The uploaded Mini App archive does not contain the live tgfoodbot bot.py source. A ready aiogram-3 integration patch for the manager-only “Курс” button is included as BOT_RATE_PATCH_RU.md; it must be merged into the current bot.py so no existing bot handlers are lost.
