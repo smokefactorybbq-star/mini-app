@@ -1169,6 +1169,29 @@ app.get(
 
 
 /*
+ * Browser configuration. The Google Maps key is a browser key, so returning it
+ * here is expected; restrict it by HTTP referrer in Google Cloud.
+ */
+app.get(
+  "/api/config",
+  (req, res) => {
+    const googleMapsBrowserKey = String(
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_MAPS_BROWSER_KEY ||
+      process.env.GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_MAPS_KEY ||
+      "AIzaSyBWF8CVNlAbdhdi6JL2ZJnwsQ_igxGNE5c"
+    ).trim();
+
+    return res.status(200).json({
+      ok: true,
+      googleMapsBrowserKey
+    });
+  }
+);
+
+
+/*
  * Открытие Mini App.
  */
 app.post(

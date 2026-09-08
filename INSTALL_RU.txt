@@ -1,0 +1,19 @@
+MINI APP Smoke Factory BBQ
+
+Это тот же кафе-заказ, что на smokefactorybbq.com, но внутри Telegram Mini App.
+Старая Telegram WebApp логика и существующая БД сохранены.
+
+Variables:
+DATABASE_URL=<старая БД SmokeFactory/MiniApp>
+TELEGRAM_BOT_TOKEN=<ТОКЕН ОСНОВНОГО tgfoodbot>
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=<browser key>
+# также принимаются GOOGLE_MAPS_BROWSER_KEY / GOOGLE_MAPS_API_KEY
+
+Новая логика:
+- Доставка / Самовывоз
+- Cash только для самовывоза
+- PromptPay = статичная картинка images/promptpay-qr.jpg
+- сумма показывается текстом под QR
+- карта работает, но точка НЕ обязательна; достаточно текстового адреса
+- заказ ко времени минимум через 1 час
+- 30 дней неодинаковой еды -> https://meal-point.com

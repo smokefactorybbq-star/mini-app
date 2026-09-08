@@ -314,7 +314,7 @@
               <button class="btn" id="map-toggle" type="button">📍 Поставить точку на карте</button>
               <button class="btn" id="geo-btn" type="button">◎ Моё местоположение</button>
             </div>
-            <div class="map-required" id="map-required">Для доставки обязательно поставьте точку на карте.</div>
+            <div class="map-required" id="map-required">Точку на карте можно поставить для более точной доставки, но это не обязательно.</div>
             <div class="map-wrap" id="map-wrap">
               <div class="map-head"><input class="input" id="map-search" placeholder="Поиск на карте (адрес/место)" /></div>
               <div class="map-box-wrap">
@@ -854,7 +854,7 @@
       const contactOk = Boolean((customer.name || '').trim()) && validPhone(customer.phone);
       const fulfillmentOk = fulfillmentType === 'PICKUP'
         ? contactOk
-        : (contactOk && Boolean((customer.address || '').trim()) && customer.location && Number.isFinite(customer.location.lat) && Number.isFinite(customer.location.lng));
+        : (contactOk && Boolean((customer.address || '').trim()));
       return accountState.ready && hasItems && fulfillmentOk && scheduledAtLeastOneHourAway();
     };
     const itemsTotal = ()=> Object.values(cart).reduce((s,i)=> s + i.qty*i.price, 0);
@@ -976,6 +976,9 @@
       mapSearch.placeholder = t.addrModal.searchPh;
       mapClose.title = t.addrModal.hideMap;
       mapClose.setAttribute('aria-label', t.addrModal.hideMap);
+      mapRequired.textContent = language==='ru'
+        ? 'Точку на карте можно поставить для более точной доставки, но это не обязательно.'
+        : 'You can place a point on the map for a more accurate delivery, but it is optional.';
 
       // time modal
       timeTitle.textContent = t.timeModal.title;
@@ -1166,7 +1169,7 @@
       }
       renderCartItems(); renderAddrSummary(); updateTotals(); closeAccountModal();
       if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
-      if(!canCheckout()){ alert(language==='ru' ? 'Заполните данные заказа и поставьте точку доставки на карте.' : 'Complete the order details and place the delivery point on the map.'); return; }
+      if(!canCheckout()){ alert(language==='ru' ? 'Заполните данные заказа и адрес доставки.' : 'Complete the order details and delivery address.'); return; }
       submitOrder();
     }
 
@@ -1580,13 +1583,24 @@
     openTimeBtn.addEventListener('click',openTimeModal);
 
     /* ==== Google Maps ==== */
+    // Google Maps remains optional for checkout. The legacy browser key is kept as
+    // a fallback so the map continues to work even if Railway did not get the new env name.
+    const LEGACY_GOOGLE_MAPS_BROWSER_KEY = "AIzaSyBWF8CVNlAbdhdi6JL2ZJnwsQ_igxGNE5c";
     let GOOGLE_MAPS_API_KEY = "";
+    let googleMapsLoadPromise = null;
 
     async function getGoogleMapsBrowserKey(){
       if(GOOGLE_MAPS_API_KEY) return GOOGLE_MAPS_API_KEY;
-      const config = await fetch('/api/config', {cache:'no-store'}).then(r=>r.json());
-      GOOGLE_MAPS_API_KEY = String(config.googleMapsBrowserKey || '');
-      if(!GOOGLE_MAPS_API_KEY) throw new Error('Google Maps key is not configured');
+      try{
+        const response = await fetch('/api/config', {cache:'no-store'});
+        if(response.ok){
+          const config = await response.json();
+          GOOGLE_MAPS_API_KEY = String(config.googleMapsBrowserKey || '').trim();
+        }
+      }catch(error){
+        console.warn('Google Maps config endpoint unavailable, using legacy browser key', error);
+      }
+      if(!GOOGLE_MAPS_API_KEY) GOOGLE_MAPS_API_KEY = LEGACY_GOOGLE_MAPS_BROWSER_KEY;
       return GOOGLE_MAPS_API_KEY;
     }
 
@@ -1594,17 +1608,33 @@
     let map = null, marker = null, geocoder = null, autocomplete = null;
 
     async function loadGoogleMaps() {
-      if (window.google && google.maps) return;
-      const apiKey = await getGoogleMapsBrowserKey();
-      return new Promise((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
-        s.async = true;
-        s.defer = true;
-        s.onload = resolve;
-        s.onerror = () => reject(new Error("Maps load error"));
-        document.head.appendChild(s);
-      });
+      if (window.google && window.google.maps) return;
+      if (googleMapsLoadPromise) return googleMapsLoadPromise;
+      googleMapsLoadPromise = (async()=>{
+        const apiKey = await getGoogleMapsBrowserKey();
+        await new Promise((resolve, reject) => {
+          const existing = document.querySelector('script[data-smoke-google-maps="1"]');
+          if(existing){
+            existing.addEventListener('load', resolve, {once:true});
+            existing.addEventListener('error', () => reject(new Error('Maps load error')), {once:true});
+            return;
+          }
+          const script = document.createElement("script");
+          script.dataset.smokeGoogleMaps = "1";
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
+          script.async = true;
+          script.defer = true;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Maps load error"));
+          document.head.appendChild(script);
+        });
+      })();
+      try{
+        await googleMapsLoadPromise;
+      }catch(error){
+        googleMapsLoadPromise = null;
+        throw error;
+      }
     }
 
     function initMap() {
@@ -1927,7 +1957,7 @@
       if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
       syncInlineCustomer();
       if(!canCheckout()){
-        alert(language==='ru' ? 'Заполните имя, телефон и данные получения. Для доставки обязательно поставьте точку на карте.' : 'Complete contact and fulfillment details. A map point is required for delivery.');
+        alert(language==='ru' ? 'Заполните имя, телефон и адрес доставки.' : 'Complete your name, phone and delivery address.');
         return;
       }
       if(orderState.when==='scheduled' && !scheduledAtLeastOneHourAway()){
