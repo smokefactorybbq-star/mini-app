@@ -1908,30 +1908,47 @@
         return;
       }
 
-      const imageUrl=`/api/promptpay/qr?amount=${encodeURIComponent(amount.toFixed(2))}&v=${Date.now()}`;
       pendingPromptPayPayload=payload;
-      pendingPromptPayDataUrl=imageUrl;
+      pendingPromptPayDataUrl='';
       paymentQrTotal.textContent=`${amount.toFixed(2)} ฿`;
-
-      paymentQrImage.onload=()=>{
-        paymentQrImage.onload=null;
-        paymentQrImage.onerror=null;
-        checkoutBtn.textContent=translations[language].placeOrder;
-        syncCheckoutBtn();
-      };
-      paymentQrImage.onerror=()=>{
-        paymentQrImage.onload=null;
-        paymentQrImage.onerror=null;
-        pendingPromptPayPayload=null;
-        pendingPromptPayDataUrl='';
-        paymentQrModal.classList.remove('active');
-        checkoutBtn.textContent=translations[language].placeOrder;
-        syncCheckoutBtn();
-        alert(language==='ru'?'Не удалось загрузить QR оплаты. Обновите Mini App и попробуйте ещё раз.':'Could not load payment QR. Reopen the Mini App and try again.');
-      };
-
-      paymentQrImage.src=imageUrl;
+      paymentQrImage.removeAttribute('src');
+      paymentQrImage.style.opacity='0.15';
       paymentQrModal.classList.add('active');
+
+      try{
+        const response=await fetch('/api/promptpay/qr',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          cache:'no-store',
+          body:JSON.stringify({amount:Number(amount.toFixed(2))})
+        });
+        const data=await response.json().catch(()=>({ok:false,error:`HTTP ${response.status}`}));
+        if(!response.ok || !data.ok || !data.dataUrl){
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+        pendingPromptPayDataUrl=data.dataUrl;
+        paymentQrImage.src=data.dataUrl;
+        paymentQrImage.style.opacity='1';
+      }catch(primaryError){
+        console.error('PromptPay JSON QR error:',primaryError);
+        const fallbackUrl=`/api/promptpay/qr?amount=${encodeURIComponent(amount.toFixed(2))}&v=${Date.now()}`;
+        pendingPromptPayDataUrl=fallbackUrl;
+        await new Promise((resolve,reject)=>{
+          paymentQrImage.onload=()=>{paymentQrImage.onload=null;paymentQrImage.onerror=null;resolve();};
+          paymentQrImage.onerror=()=>{paymentQrImage.onload=null;paymentQrImage.onerror=null;reject(new Error('QR_IMAGE_LOAD_FAILED'));};
+          paymentQrImage.src=fallbackUrl;
+        }).catch(fallbackError=>{
+          console.error('PromptPay PNG fallback error:',fallbackError);
+          pendingPromptPayPayload=null;
+          pendingPromptPayDataUrl='';
+          paymentQrModal.classList.remove('active');
+          throw fallbackError;
+        });
+        paymentQrImage.style.opacity='1';
+      }finally{
+        checkoutBtn.textContent=translations[language].placeOrder;
+        syncCheckoutBtn();
+      }
     }
 
     function submitOrder() {

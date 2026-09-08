@@ -2437,7 +2437,6 @@ app.get(
  */
 app.post(
   "/api/promptpay/qr",
-  miniAppAuth,
   async (req, res) => {
     try {
       const amount = Number(req.body?.amount);
