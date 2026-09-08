@@ -2401,7 +2401,39 @@ app.get(
 
 /*
  * Динамический PromptPay QR с суммой заказа.
- * Доступ только авторизованному Telegram-пользователю Mini App.
+ * GET возвращает PNG напрямую. Это специально сделано без miniAppAuth:
+ * QR компании не является секретом, а создание самого заказа всё равно защищено авторизацией.
+ */
+app.get(
+  "/api/promptpay/qr",
+  async (req, res) => {
+    try {
+      const amount = Number(req.query?.amount);
+      const payload = buildCompanyPromptPayPayload(amount);
+      const png = await QRCode.toBuffer(payload, {
+        type: "png",
+        width: 720,
+        margin: 2,
+        errorCorrectionLevel: "M"
+      });
+
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Content-Disposition", `inline; filename="SmokeFactory-PromptPay-${amount.toFixed(2)}.png"`);
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      return res.status(200).send(png);
+    } catch (error) {
+      console.error("GET /api/promptpay/qr:", error);
+      return res.status(400).json({
+        ok: false,
+        error: "Не удалось создать QR для оплаты"
+      });
+    }
+  }
+);
+
+/*
+ * POST оставлен для обратной совместимости.
  */
 app.post(
   "/api/promptpay/qr",

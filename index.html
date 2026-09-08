@@ -1897,20 +1897,41 @@
     });
 
     async function showPromptPay(payload){
-      try{
-        checkoutBtn.disabled=true;
-        checkoutBtn.textContent=language==='ru'?'Создаём QR…':'Creating QR…';
-        const data=await apiRequest('/api/promptpay/qr',{
-          method:'POST',
-          body:JSON.stringify({amount:payload.total})
-        });
-        pendingPromptPayPayload=payload;
-        pendingPromptPayDataUrl=data.dataUrl;
-        paymentQrImage.src=data.dataUrl;
-        paymentQrTotal.textContent=`${payload.total} ฿`;
-        paymentQrModal.classList.add('active');
-      }catch(e){ alert((e&&e.message)||'QR error'); }
-      finally{ checkoutBtn.textContent=translations[language].placeOrder; syncCheckoutBtn(); }
+      checkoutBtn.disabled=true;
+      checkoutBtn.textContent=language==='ru'?'Создаём QR…':'Creating QR…';
+
+      const amount=Number(payload.total || 0);
+      if(!Number.isFinite(amount) || amount<=0){
+        alert(language==='ru'?'Некорректная сумма заказа.':'Invalid order total.');
+        checkoutBtn.textContent=translations[language].placeOrder;
+        syncCheckoutBtn();
+        return;
+      }
+
+      const imageUrl=`/api/promptpay/qr?amount=${encodeURIComponent(amount.toFixed(2))}&v=${Date.now()}`;
+      pendingPromptPayPayload=payload;
+      pendingPromptPayDataUrl=imageUrl;
+      paymentQrTotal.textContent=`${amount.toFixed(2)} ฿`;
+
+      paymentQrImage.onload=()=>{
+        paymentQrImage.onload=null;
+        paymentQrImage.onerror=null;
+        checkoutBtn.textContent=translations[language].placeOrder;
+        syncCheckoutBtn();
+      };
+      paymentQrImage.onerror=()=>{
+        paymentQrImage.onload=null;
+        paymentQrImage.onerror=null;
+        pendingPromptPayPayload=null;
+        pendingPromptPayDataUrl='';
+        paymentQrModal.classList.remove('active');
+        checkoutBtn.textContent=translations[language].placeOrder;
+        syncCheckoutBtn();
+        alert(language==='ru'?'Не удалось загрузить QR оплаты. Обновите Mini App и попробуйте ещё раз.':'Could not load payment QR. Reopen the Mini App and try again.');
+      };
+
+      paymentQrImage.src=imageUrl;
+      paymentQrModal.classList.add('active');
     }
 
     function submitOrder() {
