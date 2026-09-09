@@ -398,7 +398,7 @@
         <label class="summary-text" id="pay-label" style="margin-top:6px;">Способ оплаты</label>
         <div class="pay-group" id="pay-group">
           <label><input type="radio" name="payment" value="PromptPay" checked> PromptPay (Thai bank)</label>
-          <label id="cash-payment-label"><input type="radio" id="cash-payment" name="payment" value="Cash"> Cash</label>
+          <label id="cash-payment-label"><input type="radio" id="cash-payment" name="payment" value="Cash"> <span id="cash-payment-text">Cash (только самовывоз)</span></label>
           <label><input type="radio" name="payment" value="Банк РФ"> Банк РФ</label>
         </div>
 
@@ -493,12 +493,11 @@
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="payment-qr-title" style="width:min(520px,94vw)">
       <div class="modal-header">
         <strong id="payment-qr-title">Оплата PromptPay</strong>
-        <button class="qr-pay-save" id="payment-qr-save" type="button">⬇ Сохранить QR</button>
       </div>
       <div class="modal-body qr-pay-card">
         <img class="qr-pay-img" id="payment-qr-image" src="/images/promptpay-qr.jpg" alt="PromptPay QR" />
         <div class="qr-pay-total" id="payment-qr-total">К оплате: 0 ฿</div>
-        <div class="qr-pay-note">После оплаты, пришлите пожалуйста чек</div>
+        <div class="qr-pay-note" id="payment-qr-note">После оплаты, пришлите пожалуйста чек</div>
         <button class="qr-pay-paid" id="payment-paid" type="button">Я оплатил!</button>
       </div>
     </div>
@@ -890,13 +889,14 @@
     const openTimeBtn=document.getElementById('open-time');
     const cashPayment=document.getElementById('cash-payment');
     const cashPaymentLabel=document.getElementById('cash-payment-label');
+    const cashPaymentText=document.getElementById('cash-payment-text');
     const paymentQrModal=document.getElementById('payment-qr-modal');
+    const paymentQrTitle=document.getElementById('payment-qr-title');
     const paymentQrImage=document.getElementById('payment-qr-image');
     const paymentQrTotal=document.getElementById('payment-qr-total');
-    const paymentQrSave=document.getElementById('payment-qr-save');
+    const paymentQrNote=document.getElementById('payment-qr-note');
     const paymentPaid=document.getElementById('payment-paid');
-    let pendingPromptPayPayload=null;
-    let pendingPromptPayDataUrl='';
+    let pendingPaymentPayload=null;
 
     // Time modal
     const timeModal=document.getElementById('time-modal');
@@ -1056,6 +1056,9 @@
       checkoutBtn.textContent = t.placeOrder;
       districtLabel.textContent = t.districtLabel;
       payLabel.textContent = t.payLabel;
+      if(cashPaymentText){
+        cashPaymentText.textContent = language==='ru' ? 'Cash (только самовывоз)' : 'Cash (pickup only)';
+      }
 
       addrInput.placeholder = t.addrModal.addrPh;
       nameInput.placeholder = t.addrModal.namePh;
@@ -1946,6 +1949,12 @@
       if (payload.bonusRequested) lines.push(`Использовано бонусов: -${payload.bonusRequested} ฿`);
       lines.push(`Итого: ${payload.total} ฿`);
       lines.push(`Оплата: ${payload.payMethod}`);
+      if(payload.payMethod === 'Банк РФ' && Number(payload.rubTotal || payload.rub_total) > 0){
+        const rubTotal = Math.round(Number(payload.rubTotal || payload.rub_total));
+        const rubRate = Number(payload.rubRate || payload.rub_rate || 0);
+        lines.push(`К оплате в рублях: ${rubTotal} ₽`);
+        if(Number.isFinite(rubRate) && rubRate > 0) lines.push(`Курс: 1 ฿ = ${rubRate.toFixed(2)} ₽`);
+      }
       lines.push(`Телефон: ${payload.phone}`);
       lines.push(`Имя: ${payload.name}`);
       if(payload.fulfillmentType !== 'PICKUP') lines.push(`Адрес: ${payload.address_plain || payload.address}`);
@@ -1998,47 +2007,66 @@
         alert(language==='ru'?'Некорректная сумма заказа.':'Invalid order total.');
         return;
       }
-      pendingPromptPayPayload=payload;
-      pendingPromptPayDataUrl='/images/promptpay-qr.jpg';
+      pendingPaymentPayload=payload;
+      paymentQrTitle.textContent=language==='ru'?'Оплата PromptPay':'PromptPay payment';
       paymentQrImage.src='/images/promptpay-qr.jpg';
+      paymentQrImage.alt='PromptPay QR';
       paymentQrTotal.textContent=(language==='ru'?'К оплате: ':'Total: ')+amount.toFixed(2)+' ฿';
+      paymentQrNote.textContent=language==='ru'?'После оплаты, пришлите пожалуйста чек':'After payment, please send the receipt';
+      paymentPaid.textContent=language==='ru'?'Я оплатил!':'I paid!';
       paymentQrModal.classList.add('active');
       lockBodyScroll();
     }
 
-    // The payment modal intentionally has no Cancel button, no X and no backdrop-close.
-    paymentQrSave.addEventListener('click',async()=>{
-      try{
-        const response=await fetch('/images/promptpay-qr.jpg',{cache:'no-store'});
-        if(!response.ok) throw new Error('QR_DOWNLOAD_HTTP_'+response.status);
-        const blob=await response.blob();
-        const fileName='SmokeFactory-PromptPay-QR.jpg';
-        if(typeof File!=='undefined'){
-          const file=new File([blob],fileName,{type:blob.type||'image/jpeg'});
-          if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-            await navigator.share({files:[file],title:'PromptPay QR'});
-            return;
-          }
-        }
-        const objectUrl=URL.createObjectURL(blob);
-        const a=document.createElement('a');
-        a.href=objectUrl;
-        a.download=fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);
-      }catch(e){
-        console.error('Save QR error',e);
-        // Last fallback: open the QR image so the user can save it from the system image viewer.
-        window.open('/images/promptpay-qr.jpg','_blank');
+    // Банк РФ: берём установленный менеджером курс с сервера,
+    // считаем рубли и только после этого показываем присланный QR.
+    async function openRussianBankModal(payload){
+      const amountBaht=Number(payload && payload.total || 0);
+      if(!Number.isFinite(amountBaht) || amountBaht<=0){
+        alert(language==='ru'?'Некорректная сумма заказа.':'Invalid order total.');
+        return;
       }
-    });
 
+      try{
+        const response=await fetch('/api/exchange-rate',{cache:'no-store'});
+        const data=await response.json().catch(()=>({}));
+        const rate=Number(data && data.rate);
+
+        if(!response.ok || !data.ok || !Number.isFinite(rate) || rate<=0){
+          throw new Error((data && data.error) || 'RATE_NOT_SET');
+        }
+
+        const rubTotal=Math.round(amountBaht*rate);
+        payload.rubRate=rate;
+        payload.rub_rate=rate;
+        payload.rubTotal=rubTotal;
+        payload.rub_total=rubTotal;
+        payload.summary=buildSummaryText(payload);
+
+        pendingPaymentPayload=payload;
+        paymentQrTitle.textContent=language==='ru'?'Оплата Банк РФ':'Russian bank payment';
+        paymentQrImage.src='/images/rf-bank-qr.jpg';
+        paymentQrImage.alt='Банк РФ QR';
+        paymentQrTotal.innerHTML=(language==='ru'
+          ? `К оплате: <strong>${rubTotal.toLocaleString('ru-RU')} ₽</strong><div style="font-size:14px;font-weight:600;margin-top:6px">Курс: 1 ฿ = ${rate.toFixed(2)} ₽</div>`
+          : `Total: <strong>${rubTotal.toLocaleString('en-US')} RUB</strong><div style="font-size:14px;font-weight:600;margin-top:6px">Rate: 1 THB = ${rate.toFixed(2)} RUB</div>`);
+        paymentQrNote.textContent=language==='ru'?'После оплаты, пришлите пожалуйста чек':'After payment, please send the receipt';
+        paymentPaid.textContent=language==='ru'?'Я оплатил!':'I paid!';
+        paymentQrModal.classList.add('active');
+        lockBodyScroll();
+      }catch(e){
+        console.error('Russian bank rate error',e);
+        alert(language==='ru'
+          ? 'Курс оплаты в рублях ещё не установлен. Попросите менеджера нажать кнопку «Курс» в боте и указать значение, например 2.71.'
+          : 'The RUB payment rate is not set yet. Please contact the manager.');
+      }
+    }
+
+    // The payment modal intentionally has no Cancel button, no X and no backdrop-close.
     paymentPaid.addEventListener('click',async()=>{
-      if(!pendingPromptPayPayload) return;
-      const payload=pendingPromptPayPayload;
-      pendingPromptPayPayload=null;
+      if(!pendingPaymentPayload) return;
+      const payload=pendingPaymentPayload;
+      pendingPaymentPayload=null;
       paymentQrModal.classList.remove('active');
       unlockBodyScroll();
       await finalizeOrderSend(payload);
@@ -2048,7 +2076,12 @@
       openPromptPayModal(payload);
     }
 
-    function submitOrder() {
+    async function showRussianBank(payload){
+      await openRussianBankModal(payload);
+    }
+
+
+    async function submitOrder() {
       if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
       syncInlineCustomer();
       if(!canCheckout()){
@@ -2096,8 +2129,13 @@
         payMethod
       };
       payload.summary = buildSummaryText(payload);
-      if(payMethod==='PromptPay') showPromptPay(payload);
-      else finalizeOrderSend(payload);
+      if(payMethod==='PromptPay') {
+        showPromptPay(payload);
+      } else if(payMethod==='Банк РФ') {
+        await showRussianBank(payload);
+      } else {
+        await finalizeOrderSend(payload);
+      }
     }
 
     /* ==== Events & Init ==== */
