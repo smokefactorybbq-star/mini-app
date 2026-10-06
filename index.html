@@ -168,6 +168,8 @@
     .phone-prefix{display:flex;align-items:center;padding:0 10px;background:#f1f5f9;border-right:1px solid var(--border)}
     .phone-input{border:none;flex:1;padding:12px;font-size:16px;line-height:1.25;min-width:0}
     .phone-input:focus{outline:none}
+    .phone-field{min-width:0}
+    .phone-hint{margin-top:4px;font-size:11px;line-height:1.25;color:var(--muted)}
 
     /* modals */
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
@@ -327,9 +329,12 @@
         <div class="checkout-fields">
           <div class="input-row">
             <input class="input" id="name-input" placeholder="Имя" autocomplete="name" />
-            <div class="phone-wrap">
-              <div class="phone-prefix">+66</div>
-              <input class="phone-input" id="phone-input" inputmode="numeric" maxlength="10" placeholder="Телефон" autocomplete="tel" />
+            <div class="phone-field">
+              <div class="phone-wrap">
+                <div class="phone-prefix">+66</div>
+                <input class="phone-input" id="phone-input" inputmode="numeric" maxlength="10" placeholder="Телефон" autocomplete="tel" />
+              </div>
+              <div class="phone-hint" id="phone-hint">После +66 не менее 9 цифр.</div>
             </div>
           </div>
 
@@ -885,6 +890,7 @@
     const mapTools=document.querySelector('#delivery-options .map-tools');
     const nameInput=document.getElementById('name-input');
     const phoneInput=document.getElementById('phone-input');
+    const phoneHint=document.getElementById('phone-hint');
     const mapToggle=document.getElementById('map-toggle');
     const geoBtn=document.getElementById('geo-btn');
     const mapWrap=document.getElementById('map-wrap');
@@ -947,6 +953,8 @@
     const canCheckout = ()=>{
       const hasItems = Object.keys(cart).length>0;
       const contactOk = Boolean((customer.name || '').trim()) && validPhone(customer.phone);
+      // Для доставки обязательны имя, корректный телефон и текстовый адрес.
+      // Точка на карте / customer.location НЕ обязательна для активации кнопки заказа.
       const fulfillmentOk = fulfillmentType === 'PICKUP'
         ? contactOk
         : (contactOk && Boolean((customer.address || '').trim()));
@@ -1069,6 +1077,11 @@
       addrInput.placeholder = t.addrModal.addrPh;
       nameInput.placeholder = t.addrModal.namePh;
       phoneInput.placeholder = t.addrModal.phonePh;
+      if(phoneHint){
+        phoneHint.textContent = language==='ru'
+          ? 'После +66 не менее 9 цифр.'
+          : 'At least 9 digits after +66.';
+      }
       mapToggle.textContent = language==='ru' ? '📍 Поставить точку на карте' : '📍 Pick point on map';
       geoBtn.textContent = t.addrModal.geoBtn;
       mapSearch.placeholder = t.addrModal.searchPh;
