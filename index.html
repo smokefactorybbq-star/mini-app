@@ -379,6 +379,10 @@
     #district-select.district-invalid{border:2px solid #b91c1c!important;box-shadow:0 0 0 2px #b91c1c19}#district-error{margin:6px 0 0;color:#b91c1c;font-size:13px;line-height:1.4;font-weight:700}#district-error[hidden]{display:none!important}
     @media(max-width:768px){.header-brand-logo{width:63px;height:45px}.header-actions{gap:6px}.hero-secondary.mealpoint-quick{padding:6px 11px;min-height:42px;gap:6px}.mealpoint-quick img{width:70px;height:25px}.mealpoint-quick span{font-size:11px}.cat-mealpoint .cat-img{width:76px;height:30px;flex-basis:76px}.brand-wordmark b{white-space:nowrap}}
     @media(max-width:400px){.brand-emblem{display:none}.header-brand-logo{width:54px;height:40px}.header-inner{padding-inline:10px}.header-actions{gap:5px}.brand-wordmark b{font-size:15px}.round-control,.account-trigger.round-control,.lang-toggle.round-control{width:40px;height:40px;min-width:40px;flex-basis:40px}}
+    /* Equal-size hero buttons on all screen sizes. */
+    .hero-actions{display:grid;grid-template-columns:minmax(0,180px);gap:10px;justify-content:start;align-items:stretch}
+    .hero-actions .hero-cta,.hero-actions .hero-secondary.mealpoint-quick{box-sizing:border-box;width:100%;height:58px;min-height:58px;max-height:58px;padding:4px 10px;display:flex;align-items:center;justify-content:center;border-radius:999px;margin:0;text-align:center}
+    .hero-actions .mealpoint-quick img{display:block;width:100%;height:100%;object-fit:contain}
     /* Full-size dish photography, without changing the catalogue layout. */
     .menu-card>img[role="button"]{cursor:zoom-in;touch-action:manipulation}
     .menu-card>img[role="button"]:focus-visible{outline:3px solid #953e37;outline-offset:-4px}
@@ -415,7 +419,7 @@
         <h1 id="hero-heading">Русская кухня.<br>Американский смокер.</h1>
         <p id="hero-intro">Любимые домашние блюда и мясо из американского смокера. Закажите доставку или самовывоз.</p>
         <span class="hero-hours" id="hero-hours">10:00–22:00 · ПН–СБ</span>
-        <div class="hero-actions"><button type="button" class="hero-cta" id="hero-menu">Смотреть меню</button><a class="hero-secondary mealpoint-quick" href="https://meal-point.com" target="_blank" rel="noopener" id="hero-subscription"><img src="/images/mealpoint-logo.png" alt="MealPoint"><span id="hero-subscription-label">Обеды по подписке</span></a></div>
+        <div class="hero-actions"><button type="button" class="hero-cta" id="hero-menu">Смотреть меню</button><a class="hero-secondary mealpoint-quick" href="https://meal-point.com" target="_blank" rel="noopener" id="hero-subscription" aria-label="MealPoint — обеды по подписке"><img src="/images/mealpoint-logo.png" alt="MealPoint"></a></div>
       </div>
       <div class="hero-food"><img class="hero-photo" src="/images/Rebra BBQ.jpeg" alt="Рёбра BBQ Smoke Factory"><img class="brand-stamp brand-stamp-highlight" src="/images/logo.jpg" alt="" aria-hidden="true"><img class="brand-stamp" src="/images/logo.jpg" alt="Smoke Factory BBQ — фирменное клеймо"><span class="hero-food-label" id="hero-food-label">BBQ · Low &amp; slow</span></div>
     </div>
@@ -1243,7 +1247,7 @@
       document.getElementById('hero-intro').textContent=language==='ru'?'Любимые домашние блюда и мясо из американского смокера. Закажите доставку или самовывоз.':'Homestyle classics and meat from our American smoker. Order delivery or pickup.';
       document.getElementById('hero-hours').textContent=language==='ru'?'10:00–22:00 · ПН–СБ':'10:00–22:00 · MON–SAT';
       document.getElementById('hero-menu').textContent=language==='ru'?'Смотреть меню':'Explore menu';
-      document.getElementById('hero-subscription-label').textContent=language==='ru'?'Обеды по подписке':'Meal subscriptions';
+      document.getElementById('hero-subscription').setAttribute('aria-label',language==='ru'?'MealPoint — обеды по подписке':'MealPoint — meal subscriptions');
       document.getElementById('menu-heading').textContent=language==='ru'?'Меню':'Menu';
       document.getElementById('menu-subheading').textContent=language==='ru'?'Выберите любимые блюда':'Choose your favourites';
       document.getElementById('menu-search').placeholder=language==='ru'?'Поиск блюда':'Find a dish';
