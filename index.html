@@ -273,6 +273,109 @@
       .profile-grid .full{grid-column:auto}
     }
       #map-wrap{display:none}
+
+    /* Smoke Factory — redesigned storefront. Existing order and account logic stays intact. */
+    :root{--accent:#8b3734;--danger:#a12e31;--bg:#f7f6f3;--text:#21201e;--muted:#6b6862;--border:#e3dfd8;--card:#fff;--mobile-bar-h:78px;--header-h:76px;--page-max:1280px;--radius:18px}
+    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.48}
+    button{font:inherit}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b66d64;outline-offset:3px}
+    .header-sticky{height:var(--header-h);background:#fff;border-bottom:1px solid var(--border)}
+    .header-inner{max-width:var(--page-max);height:100%;padding:8px 24px;display:flex;justify-content:space-between;gap:24px}
+    .logo-wrap{flex:0 0 auto}.logo-img{height:62px;width:112px;object-fit:contain;border-radius:0}
+    .header-actions{display:flex;align-items:center;gap:12px;min-width:0}
+    .hero-text{font-size:14px;color:#615d56;font-weight:650;white-space:nowrap;margin-right:10px}
+    .lang-toggle,.account-trigger{margin:0;height:40px;border-radius:10px;border:1px solid #e3dfd8;font-size:14px;font-weight:650;white-space:nowrap;background:#fff;padding:0 12px}
+    .account-trigger.login-mode{background:#24211f;border-color:#24211f;color:#fff;box-shadow:none}
+    .hero-shell{max-width:var(--page-max);padding:24px 24px 18px;margin:auto}
+    .hero-panel{display:grid;grid-template-columns:1.05fr 1fr;min-height:300px;border-radius:24px;overflow:hidden;background:#22201e;color:#fff;position:relative;isolation:isolate}
+    .hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:36px 42px;position:relative;z-index:1;gap:13px}
+    .eyebrow{font-size:12px;letter-spacing:.17em;text-transform:uppercase;font-weight:750;color:#d9a48f;display:flex;align-items:center;gap:8px}
+    .eyebrow:before{content:"";width:23px;height:2px;background:#b46455}
+    .hero-copy h1{font-size:clamp(33px,4vw,56px);letter-spacing:-.045em;line-height:1.02;margin:0;max-width:640px;font-weight:830}
+    .hero-copy p{font-size:16px;color:#d7d1c9;line-height:1.55;margin:0;max-width:460px}
+    .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:7px}
+    .hero-cta{background:#9d4240;color:white;font-weight:750;border:0;padding:12px 18px;border-radius:10px;cursor:pointer;min-height:44px}
+    .hero-secondary{color:#f3e8db;font-size:14px;text-decoration:none;border-bottom:1px solid #95766a;padding:9px 0;font-weight:650}
+    .hero-food{position:relative;min-width:0;background:#292624;overflow:hidden}
+    .hero-food img{width:100%;height:100%;display:block;object-fit:cover;position:absolute;inset:0;object-position:center 54%}
+    .hero-food:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#22201e 0%,transparent 25%)}
+    .hero-food-label{position:absolute;right:20px;bottom:18px;z-index:2;background:rgba(22,21,20,.85);color:#fff;padding:9px 14px;border-radius:9px;backdrop-filter:blur(6px);font-size:13px;font-weight:700}
+    .loyalty-register-note{margin:12px 0 0;max-width:none;background:#ede9e2;border:1px solid #e2dacf;border-radius:10px;padding:10px 15px;color:#514939;font-size:13px;font-weight:500;line-height:1.4}
+    .cat-strip-wrap{top:var(--header-h);background:rgba(247,246,243,.98);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .cat-strip{padding:12px 24px;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;align-items:center;justify-content:space-between}
+    .cat-strip::-webkit-scrollbar{display:none}.cat-btn{height:58px;flex:1 0 min-content;min-width:132px;border-radius:12px;background:white;border:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:7px 10px;isolation:auto;text-align:left;transition:background .18s,border-color .18s}
+    .cat-btn::after{display:none}.cat-btn .cat-img{position:static;flex:0 0 42px;width:42px;height:42px;object-fit:cover;border-radius:8px;opacity:1}
+    .cat-btn .cat-name{position:static;transform:none;left:auto;width:auto;color:var(--text);text-align:left;text-shadow:none;font-size:13px;line-height:1.2;font-weight:750}
+    .cat-btn:hover,.cat-btn.active{background:#f0e3df;border-color:#ac7169}.cat-btn:hover .cat-img{transform:none}
+    .welcome-section{font-size:15px;max-width:var(--page-max);padding:20px 24px 0;text-align:left;color:var(--muted);line-height:1.6}
+    .page-layout{max-width:var(--page-max);grid-template-columns:minmax(0,1fr) minmax(310px,355px);padding:8px 24px 44px;gap:25px;align-items:start}
+    .menu-toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin:14px 0 8px}.menu-toolbar h2{font-size:28px;letter-spacing:-.035em;margin:0;font-weight:800}.menu-toolbar p{font-size:14px;color:var(--muted);margin:0}
+    .cat-title{scroll-margin-top:160px;margin:23px 0 12px;padding:0;border:0;font-size:23px;font-weight:800;letter-spacing:-.035em}
+    .menu-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;align-items:stretch}
+    .menu-card{border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 3px 12px rgba(35,28,20,.045);background:#fff;min-width:0;transition:transform .18s,box-shadow .18s}
+    .menu-card:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(35,28,20,.10)}.menu-card:hover img{transform:none}
+    .menu-card>img{height:auto;aspect-ratio:1.28;object-fit:cover;object-position:center;display:block;background:#e8e4dd}
+    .card-body{padding:13px;gap:8px;min-width:0}.card-title{font-weight:750;font-size:17px;line-height:1.22;letter-spacing:-.015em}
+    .card-desc{font-size:14px;line-height:1.42;color:var(--muted);margin-bottom:4px;overflow-wrap:anywhere}
+    .card-footer{gap:8px;align-items:center;margin-top:auto}.card-price{font-size:20px;font-weight:800;letter-spacing:-.035em;color:#2b2520;white-space:nowrap}
+    .add-btn{background:#8b3734;color:#fff;border:0;border-radius:9px;padding:9px 10px;min-height:40px;min-width:44px;font-size:14px;font-weight:700;white-space:nowrap;transition:background .18s,transform .18s}
+    .add-btn:hover{background:#71302f;transform:none}.add-btn:active{transform:scale(.97)}
+    .size-row{gap:5px;flex-wrap:wrap;margin:0}.size-dot{border-color:#8b3734;width:20px;height:20px}.size-dot.active{background:#8b3734}.size-label{font-size:13px;margin-right:7px;color:#5d5852}
+    .cart-container{position:sticky;top:calc(var(--header-h) + 92px);margin-top:14px;background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:0 5px 22px rgba(35,28,20,.06);max-height:calc(100dvh - var(--header-h) - 108px);overflow-y:auto;scroll-margin-top:calc(var(--header-h) + 84px)}
+    .cart-header{position:sticky;top:0;z-index:2;background:#fff;padding:16px;border-bottom:1px solid var(--border);font-size:19px;letter-spacing:-.02em}.cart-pill{border:0;background:#f0ece6;color:#635b50;font-size:12px;letter-spacing:0;font-weight:650}
+    .cart-body{padding:15px;gap:13px}.cart-empty{text-align:center;border:1px dashed var(--border);border-radius:12px;padding:18px 12px;color:var(--muted);font-size:14px;line-height:1.45}.cart-empty strong{display:block;color:var(--text);font-size:16px;margin-bottom:3px}
+    .fulfillment-switch{gap:6px;background:#f2efeb;padding:4px;border-radius:12px}.fulfillment-btn{padding:11px 8px;border:0;min-height:42px;border-radius:9px;background:transparent;font-size:14px;font-weight:700;color:#5c5750}.fulfillment-btn.active{background:#fff;color:#222;box-shadow:0 1px 5px #0001}
+    .checkout-fields{background:#faf9f7;border:1px solid var(--border);border-radius:12px;padding:12px;gap:12px}.cart-container .input-row{grid-template-columns:1fr;gap:8px}
+    .input,.phone-wrap,.order-time-button{border-color:#dcd7ce;border-radius:10px;background:#fff}.input,.phone-input{font-size:16px}.summary-text{color:var(--muted);font-size:14px}.input:focus,.phone-wrap:focus-within{outline:2px solid #b66d64;outline-offset:1px}
+    .map-tools .btn{font-size:13px;padding:8px 9px;flex:1 1 auto;min-height:38px}.map-required{color:#746b60;font-size:12px;font-weight:500;margin-top:4px}.order-time-button{font-size:14px}
+    .bonus-box{background:#f6f3ed;padding:12px;border:1px solid var(--border)}.bonus-box>strong{font-size:14px}.bonus-apply{background:#36302a;font-size:13px;font-weight:650}.bonus-hint{font-size:12px}
+    .totals-section{border-color:var(--border);gap:8px}.totals-section .summary-text{display:flex;justify-content:space-between;gap:7px}.totals-section .summary-text:last-child{padding-top:8px;border-top:1px solid var(--border)}#grand-total-row{font-size:20px;color:var(--text);width:100%;font-weight:800}
+    .pay-group{gap:7px}.pay-group label{font-size:13px;border-radius:8px;padding:9px 10px;font-weight:600;border-color:var(--border)}input[type=radio]{accent-color:var(--accent)}
+    .checkout-btn{background:#8b3734;border-radius:12px;min-height:50px;font-size:16px;font-weight:750}.checkout-btn:disabled{background:#e6e2dc;color:#868078}
+    .cart-item{grid-template-columns:48px minmax(0,1fr);gap:8px;border-bottom:1px solid var(--border)}.cart-item>div:nth-child(2){min-width:0}.cart-item strong{font-size:14px;overflow-wrap:anywhere}.qty-controls{grid-column:2;justify-self:end;border-radius:8px}.qty-btn{width:32px;height:32px;color:#8b3734;font-size:18px;font-weight:700}.qty-display{font-size:14px}
+    .subscription-promo-panel.subscription-promo-copy{min-height:0;border-radius:18px;background:#24211f;padding:25px;color:white;box-shadow:none;gap:12px}.subscription-promo-copy h3{font-size:26px}.subscription-promo-copy p{color:#dad4cd}.subscription-promo-cta{border-radius:10px;background:#9d4240;color:#fff;align-self:flex-start;font-weight:700}
+    .modal-content{border-radius:20px;background:#fff}.modal-header{padding:16px 20px}.modal-header strong{font-size:19px}.modal-body{padding:18px 20px}.modal-footer{padding:14px 20px}.btn-primary{background:#8b3734;font-weight:700}.btn{min-height:40px}.telegram-login-box{background:#faf9f7}.history-card,.loyalty-box{border-radius:14px}
+    @media(max-width:1160px){.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cat-strip{justify-content:flex-start}.cat-btn{flex:0 0 auto;min-width:120px}.hero-text{margin-right:0}}
+    @media(max-width:950px){.page-layout{grid-template-columns:minmax(0,1fr)}.cart-container{position:relative;top:auto;max-height:none;overflow:visible}.cart-header{position:static}.menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.header-actions{gap:7px}.hero-copy{padding:26px 28px}.hero-text{font-size:12px}.welcome-section{padding-top:14px}}
+    @media(max-width:768px){:root{--header-h:64px}.header-sticky{position:relative;top:auto;height:auto;min-height:64px}.header-inner{padding:7px 13px;gap:8px}.logo-img{width:80px;height:47px}.header-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.hero-text{font-size:11px;display:none}.lang-toggle,.account-trigger{height:36px;padding:0 9px;font-size:12px}.hero-shell{padding:12px 12px 10px}.hero-panel{grid-template-columns:1fr;min-height:265px;border-radius:18px}.hero-food{position:absolute;inset:0;z-index:0}.hero-food:after{background:linear-gradient(90deg,rgba(25,21,20,.96) 0%,rgba(25,21,20,.76) 52%,rgba(25,21,20,.15) 100%)}.hero-food img{object-position:70% center}.hero-copy{padding:22px 19px;max-width:85%;gap:10px}.hero-copy h1{font-size:34px;max-width:330px}.hero-copy p{font-size:14px;line-height:1.5}.eyebrow{font-size:11px}.hero-cta{padding:10px 14px;font-size:14px}.hero-secondary{font-size:12px}.hero-food-label{font-size:11px;padding:6px 9px;right:9px;bottom:9px}.loyalty-register-note{font-size:12px;margin:9px 0 0;padding:9px 11px}.cat-strip-wrap{position:sticky;top:0}.cat-strip{padding:8px 12px;gap:7px}.cat-btn{height:49px;min-width:106px;padding:5px 8px;gap:6px;border-radius:10px}.cat-btn .cat-img{width:34px;height:34px;flex-basis:34px}.cat-btn .cat-name{font-size:12px}.welcome-section{padding:12px 13px 0;font-size:13px}.page-layout{padding:6px 12px calc(var(--mobile-bar-h) + env(safe-area-inset-bottom,0) + 18px);gap:17px}.menu-toolbar{margin:9px 0 6px;align-items:center}.menu-toolbar h2{font-size:23px}.menu-toolbar p{font-size:12px}.cat-title{font-size:20px;margin:17px 0 9px;scroll-margin-top:72px}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.menu-card{border-radius:13px}.menu-card>img{aspect-ratio:1.12}.card-body{padding:10px;gap:7px}.card-title{font-size:15px;line-height:1.25}.card-desc{font-size:13px;line-height:1.36}.card-footer{gap:5px}.card-price{font-size:17px}.add-btn{font-size:12px;padding:8px;min-height:38px}.size-label{font-size:12px}.cart-container{margin-top:0;scroll-margin-top:73px}.cart-body{padding:13px}.mobile-progress{height:var(--mobile-bar-h);padding:10px 12px calc(env(safe-area-inset-bottom,0) + 8px);gap:12px;box-shadow:0 -6px 22px #2e211015;background:#fff;border-top:1px solid var(--border)}.mobile-cart-btn{width:auto;flex:1;height:48px;border:0;background:#8b3734;color:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:760}.mobile-cart-btn svg{stroke:white}.mobile-cart-btn svg path,.mobile-cart-btn svg circle{stroke:white;fill:none}.mobile-range-wrap{flex:0 0 auto;min-width:105px;display:block}.mobile-range{display:none}.mobile-labels{display:block;color:#5d5852;font-size:12px}.mobile-labels b{display:block;font-size:21px;color:#21201e;line-height:1.15}.mobile-home{display:none}.account-modal-content{width:100vw;height:100dvh;border-radius:0}.modal-backdrop:not(#account-modal) .modal-content{width:calc(100vw - 16px)}.qr-pay-paid{background:#8b3734}}
+    @media(max-width:370px){.hero-copy{max-width:95%}.hero-copy h1{font-size:29px}.menu-grid{grid-template-columns:1fr}.menu-card{display:grid;grid-template-columns:120px minmax(0,1fr)}.menu-card>img{height:100%;aspect-ratio:auto}.card-body{min-height:145px}.card-title{font-size:16px}.card-footer{justify-content:space-between}.add-btn{font-size:13px}}
+    .menu-search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);padding:8px 11px;border-radius:11px;min-width:0;width:min(230px,44%);color:var(--muted)}.menu-search span{font-size:21px;line-height:1}.menu-search input{border:0;background:transparent;min-width:0;width:100%;font-size:14px;outline:none;color:var(--text);padding:3px 0}.menu-search:focus-within{border-color:#aa6c62}.menu-search-empty{color:var(--muted);padding:20px 0}.menu-section[hidden],.menu-card[hidden]{display:none!important}.mobile-count{border-radius:999px;padding:2px 7px;background:#fff2;font-size:13px;min-width:20px}.hero-hours{display:none;color:#e1c6b9;font-size:12px;font-weight:650}
+    @media(max-width:768px){.hero-hours{display:block}.menu-search{width:44%;padding:7px 8px}.menu-search input{font-size:16px!important}.menu-search span{font-size:18px}.card-desc{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.card-desc.expanded{display:block;overflow:visible}.card-desc-toggle{font-size:12px;color:#8b3734;background:none;border:0;text-align:left;padding:0;font-weight:650;cursor:pointer;align-self:flex-start}}
+    @media(min-width:769px){.card-desc-toggle{display:none}}
+    @supports(overflow:clip){html,body{overflow-x:clip}}
+    /* Premium BBQ direction — editorial typography, tactile round controls,
+       and the real brand mark blended into the actual ribs photograph. */
+    :root{--accent:#953e37;--bg:#f6f4ef;--text:#231f1b;--border:#dfd9cf;--muted:#777067;--header-h:84px}
+    .header-sticky{background:#fdfbf7;border-bottom:1px solid #e4ded4}.header-inner{padding:10px 24px}
+    .logo-wrap{border:0;background:transparent;color:#22201d;padding:0;gap:10px;text-align:left;cursor:pointer}
+    .brand-emblem{flex:0 0 42px;width:42px;height:42px;border:1px solid #9d5147;border-radius:50%;display:grid;place-items:center;color:#9d5147}
+    .brand-emblem svg{width:25px;height:25px}.brand-wordmark{display:flex;flex-direction:column;gap:1px}.brand-wordmark b{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.02;letter-spacing:-.04em;font-weight:800}.brand-wordmark small{font-size:10px;line-height:1.2;letter-spacing:.18em;font-weight:750;color:#8a5e51}
+    .header-actions{gap:10px}.hero-text{font-size:13px;letter-spacing:.015em;color:#665c53;font-weight:600;white-space:nowrap;margin-right:12px}
+    .round-control,.account-trigger.round-control,.lang-toggle.round-control{position:relative;width:49px;height:49px;flex:0 0 49px;min-width:49px;border-radius:50%;border:1px solid #d9d0c4;padding:0;display:grid;place-items:center;margin:0;background:#fff;color:#27211e;box-shadow:0 2px 7px #24190b0a;font-weight:800;font-size:13px;transition:transform .18s,background .18s,border-color .18s}
+    .round-control:hover,.account-trigger.round-control:hover{transform:translateY(-2px);background:#eee6da;border-color:#a96759}.round-control:active{transform:scale(.96)}
+    .account-trigger.round-control.login-mode{background:#292421;color:white;border-color:#292421;box-shadow:none}.round-control svg{display:block;width:23px;height:23px}.account-trigger:not(.login-mode)::after{content:"";position:absolute;right:4px;bottom:5px;width:9px;height:9px;background:#4c8c60;border:2px solid #fff;border-radius:50%}
+    .language-control-label{font-size:13px;letter-spacing:.08em;line-height:1;font-weight:800}
+    .hero-shell{padding-top:22px;padding-bottom:13px}.hero-panel{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);background:#211d1a;border-radius:26px;min-height:0;box-shadow:0 16px 40px #3c2b1b17}
+    .hero-copy{padding:40px clamp(26px,4vw,58px);gap:18px;background:radial-gradient(ellipse at 0 100%,#503127 0,transparent 58%),#211d1a;align-self:stretch}
+    .hero-copy .eyebrow{letter-spacing:.22em;font-weight:700;color:#d6a18c}.hero-copy h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(37px,4.65vw,66px);letter-spacing:-.055em;line-height:1.02;color:#fff5e7;text-wrap:balance}.hero-copy p{font-size:16px;line-height:1.62;color:#dad0c5;max-width:400px}
+    .hero-actions{margin-top:6px;gap:19px}.hero-cta{background:#9d443a;border-radius:999px;padding:13px 24px;font-size:15px;font-weight:750;border:1px solid #bd6653;box-shadow:0 4px 18px rgba(157,68,58,.22)}.hero-cta:hover{background:#ad5044}.hero-secondary{color:#f5e9db;border-bottom-color:#a97b6a;font-size:14px}
+    .hero-food{position:relative;inset:auto;aspect-ratio:5/4;align-self:center;overflow:hidden;isolation:isolate;background:#36312e}.hero-food:after{background:linear-gradient(90deg,#211d1a80 0%,transparent 19%);z-index:1;pointer-events:none}
+    .hero-food .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:saturate(.91) contrast(1.045)}
+    .hero-food .brand-stamp{position:absolute;inset:auto;left:67%;top:56%;width:28%;height:auto;aspect-ratio:1080/736;object-fit:contain;transform:translate(-50%,-50%) rotate(37deg) skewY(-3deg);transform-origin:center;z-index:2;pointer-events:none;mix-blend-mode:multiply;filter:grayscale(1) contrast(2.4) brightness(1.18);opacity:.96}
+    .hero-food .brand-stamp-highlight{mix-blend-mode:screen;filter:grayscale(1) invert(1) contrast(2.4);transform:translate(calc(-50% + 1px),calc(-50% + 1px)) rotate(37deg) skewY(-3deg);opacity:.15;z-index:1}
+    .hero-food-label{z-index:3;background:#251d19c9;border-radius:999px;border:1px solid #d8bfa650;font-size:11px;letter-spacing:.08em;text-transform:uppercase;right:16px;bottom:16px;padding:8px 12px;font-weight:700}
+    .loyalty-register-note{border-radius:999px;background:#f0eae1;color:#64564a;border-color:#e4dbce;padding:11px 17px;font-size:13px}
+    .cat-strip-wrap{background:#f6f4effa}.cat-strip{gap:9px;padding-block:12px}.cat-btn{min-width:126px;height:56px;padding:5px 12px 5px 6px;border-radius:999px;background:#fdfbf7;border-color:#ddd4c8}.cat-btn .cat-img{width:42px;height:42px;border-radius:50%;flex-basis:42px}.cat-btn .cat-name{font-size:13px;letter-spacing:-.01em}.cat-btn:hover,.cat-btn.active{background:#292421;border-color:#292421}.cat-btn:hover .cat-name,.cat-btn.active .cat-name{color:#fff}
+    .welcome-section{color:#6d6257}.menu-toolbar h2,.cat-title{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.045em}.menu-toolbar h2{font-size:33px}.cat-title{font-size:27px}.menu-search{border-radius:999px}.menu-card{border-radius:20px;border-color:#e4ddd2;box-shadow:0 3px 18px #362b1710}.menu-card>img{aspect-ratio:1.21}.card-body{padding:15px;gap:9px}.card-title{font-size:17px;font-weight:720}.card-price{font-size:22px;font-weight:800}.add-btn{border-radius:999px;background:#953e37;min-height:42px;padding:10px 13px}.cart-container{border-radius:24px;box-shadow:0 12px 30px #362b1710}.cart-header{background:#24211e;color:#fff;border-color:#24211e;border-radius:23px 23px 0 0}.cart-pill{background:#f2e6d7;color:#45392e}.cart-empty{background:#f9f6ef}.checkout-btn{border-radius:999px;background:#953e37}.qty-controls{border-radius:999px}.mobile-cart-btn{border-radius:999px;background:#953e37}
+    @media(max-width:950px){.hero-copy{padding:30px 28px;gap:12px}.hero-copy h1{font-size:43px}.hero-copy p{font-size:15px}.hero-food{aspect-ratio:5/4}.hero-panel{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.hero-actions{gap:13px}.cat-btn{flex:0 0 auto}}
+    @media(max-width:768px){:root{--header-h:72px}.header-inner{padding:9px 13px;gap:8px}.brand-emblem{width:37px;height:37px;flex-basis:37px}.brand-emblem svg{width:21px;height:21px}.brand-wordmark b{font-size:17px}.brand-wordmark small{font-size:9px;letter-spacing:.12em}.logo-wrap{gap:7px}.header-actions{gap:8px;flex-wrap:nowrap}.round-control,.account-trigger.round-control,.lang-toggle.round-control{width:44px;height:44px;min-width:44px;flex-basis:44px}.round-control svg{width:21px;height:21px}.hero-shell{padding:11px 12px 9px}.hero-panel{grid-template-columns:1fr;border-radius:19px}.hero-food{grid-row:1;position:relative;inset:auto;aspect-ratio:5/4;align-self:auto;z-index:0}.hero-food:after{background:linear-gradient(0deg,#211d1a55 0%,transparent 24%)}.hero-copy{grid-row:2;padding:19px 20px 23px;max-width:none;gap:9px}.hero-copy h1{font-size:35px;max-width:100%}.hero-copy p{font-size:14px;line-height:1.45}.hero-copy .eyebrow{font-size:10px}.hero-cta{padding:10px 16px;min-height:42px;font-size:14px}.hero-actions{gap:13px;margin-top:3px}.hero-secondary{font-size:12px}.hero-food-label{right:12px;bottom:12px}.loyalty-register-note{border-radius:12px;padding:9px 12px;font-size:12px}.cat-strip{padding:8px 12px;gap:7px}.cat-btn{height:48px;min-width:103px;padding:5px 10px 5px 5px;gap:7px}.cat-btn .cat-img{width:36px;height:36px;flex-basis:36px}.cat-btn .cat-name{font-size:12px}.menu-toolbar h2{font-size:27px}.cat-title{font-size:23px}.menu-card{border-radius:15px}.card-body{padding:10px;gap:7px}.card-title{font-size:15px}.card-price{font-size:18px}.add-btn{min-height:38px;font-size:12px;padding:8px 9px}.cart-header{border-radius:23px 23px 0 0}.menu-grid{gap:10px}}
+    @media(max-width:370px){.brand-wordmark b{font-size:15px}.brand-emblem{width:32px;height:32px;flex-basis:32px}.hero-copy h1{font-size:31px}.card-footer{gap:6px}.card-price{font-size:18px}.menu-card>img{height:100%;aspect-ratio:auto}}
+    .header-brand-logo{width:94px;height:62px;object-fit:contain;display:block;flex:0 0 auto;mix-blend-mode:multiply}
+    .hero-secondary.mealpoint-quick{display:inline-flex;align-items:center;gap:9px;background:#fff;border:0;border-radius:999px;color:#282420;padding:8px 13px;text-decoration:none;min-height:44px}.mealpoint-quick img{width:79px;height:28px;object-fit:contain}.mealpoint-quick span{font-size:12px;font-weight:700;white-space:nowrap}
+    .cat-mealpoint .cat-img{width:86px;height:34px;flex-basis:86px;object-fit:contain;border-radius:6px;background:#fff;padding:3px}.cat-mealpoint .cat-name{display:none}.cat-mealpoint{justify-content:center;min-width:110px}
+    #district-select.district-invalid{border:2px solid #b91c1c!important;box-shadow:0 0 0 2px #b91c1c19}#district-error{margin:6px 0 0;color:#b91c1c;font-size:13px;line-height:1.4;font-weight:700}#district-error[hidden]{display:none!important}
+    @media(max-width:768px){.header-brand-logo{width:63px;height:45px}.header-actions{gap:6px}.hero-secondary.mealpoint-quick{padding:6px 11px;min-height:42px;gap:6px}.mealpoint-quick img{width:70px;height:25px}.mealpoint-quick span{font-size:11px}.cat-mealpoint .cat-img{width:76px;height:30px;flex-basis:76px}.brand-wordmark b{white-space:nowrap}}
+    @media(max-width:400px){.brand-emblem{display:none}.header-brand-logo{width:54px;height:40px}.header-inner{padding-inline:10px}.header-actions{gap:5px}.brand-wordmark b{font-size:15px}.round-control,.account-trigger.round-control,.lang-toggle.round-control{width:40px;height:40px;min-width:40px;flex-basis:40px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
 
@@ -282,17 +385,29 @@
   <!-- Header -->
   <header class="header-sticky">
     <div class="header-inner">
-      <div class="logo-wrap" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-        <img class="logo-img" src="/images/logo.jpg" alt="Smoke Factory BBQ logo">
-      </div>
-      <div>
+      <button type="button" class="logo-wrap" aria-label="Smoke Factory BBQ — home" onclick="window.scrollTo({top:0,behavior:'smooth'})"><span class="brand-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2c.4 4.4-4.4 6-4 9.5 1.5-.8 2.4-2 2.7-3.6 4.2 3 7.3 6.4 4.4 11.2C13.4 24 6 21.6 5 16.9 4 12.5 8.1 9 8 5.6c1.5 1 2.2 2.2 2.4 3.5C12 6.7 12.8 4.4 13 2Z" fill="currentColor"/><path d="M12.8 14.5c2.7 2.4 2.8 4.4-.2 6.1-3.4-.5-3.2-3.9.2-6.1Z" fill="#fdfbf7"/></svg></span><span class="brand-wordmark"><b>Smoke Factory</b><small>BBQ · PHUKET</small></span></button>
+      <div class="header-actions">
         <div class="hero-text" id="hero-text">Delivery 10.00 to 22.00 MON-SAT</div>
-        <button class="lang-toggle" id="lang-toggle" aria-label="Switch language">🇷🇺 RU</button>
-        <button class="account-trigger login-mode" id="account-open" type="button">✈ Войти через Telegram</button>
-        <div class="loyalty-register-note" id="loyalty-register-note">Зарегистрируйтесь в личном кабинете, чтобы участвовать в программе лояльности и получать бонусные баты.</div>
+        <button class="lang-toggle round-control" id="lang-toggle" type="button" aria-label="Switch language" title="Switch language"><span class="language-control-label" id="language-control-label">RU</span></button>
+        <button class="account-trigger round-control login-mode" id="account-open" type="button" aria-label="Личный кабинет" title="Личный кабинет"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20v-2.1c0-3.2 2.6-5.4 6.5-5.4s6.5 2.2 6.5 5.4V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        <img class="header-brand-logo" src="/images/logo.jpg" alt="Smoke Factory BBQ">
       </div>
     </div>
   </header>
+
+  <section class="hero-shell" aria-label="Smoke Factory BBQ">
+    <div class="hero-panel">
+      <div class="hero-copy">
+        <span class="eyebrow" id="hero-eyebrow">Smoke Factory · Phuket</span>
+        <h1 id="hero-heading">Русская кухня.<br>Американский смокер.</h1>
+        <p id="hero-intro">Любимые домашние блюда и мясо из американского смокера. Закажите доставку или самовывоз.</p>
+        <span class="hero-hours" id="hero-hours">10:00–22:00 · ПН–СБ</span>
+        <div class="hero-actions"><button type="button" class="hero-cta" id="hero-menu">Смотреть меню</button><a class="hero-secondary mealpoint-quick" href="https://meal-point.com" target="_blank" rel="noopener" id="hero-subscription"><img src="/images/mealpoint-logo.png" alt="MealPoint"><span id="hero-subscription-label">Обеды по подписке</span></a></div>
+      </div>
+      <div class="hero-food"><img class="hero-photo" src="/images/Rebra BBQ.jpeg" alt="Рёбра BBQ Smoke Factory"><img class="brand-stamp brand-stamp-highlight" src="/images/logo.jpg" alt="" aria-hidden="true"><img class="brand-stamp" src="/images/logo.jpg" alt="Smoke Factory BBQ — фирменное клеймо"><span class="hero-food-label" id="hero-food-label">BBQ · Low &amp; slow</span></div>
+    </div>
+    <div class="loyalty-register-note" id="loyalty-register-note">Зарегистрируйтесь в личном кабинете, чтобы участвовать в программе лояльности и получать бонусные баты.</div>
+  </section>
 
   <!-- Categories strip -->
   <div class="cat-strip-wrap">
@@ -306,7 +421,7 @@
 
   <main class="page-layout">
     <!-- MENU -->
-    <section id="menu-root"></section>
+    <section class="menu-area"><div class="menu-toolbar"><div><h2 id="menu-heading">Меню</h2><p id="menu-subheading">Выберите любимые блюда</p></div><label class="menu-search"><span aria-hidden="true">⌕</span><input id="menu-search" type="search" placeholder="Поиск блюда" aria-label="Поиск блюда"></label></div><div id="menu-root"></div><p id="menu-search-empty" hidden></p></section>
 
     <!-- CART -->
     <aside id="cart" class="cart-container" aria-live="polite">
@@ -333,7 +448,8 @@
 
           <div id="delivery-options">
             <label class="summary-text" id="district-label">Район доставки</label>
-            <select class="input" id="district-select">
+            <select class="input" id="district-select" aria-describedby="district-error" required>
+              <option value="" selected disabled>—</option>
               <option value="CENTRAL_KATHU">Central Phuket, Kathu — 50 ฿</option>
               <option value="BASE_UP_TOWN">Base up town — 0 ฿</option>
               <option value="KATA_KARON">Kata, Karon — 150 ฿</option>
@@ -344,6 +460,7 @@
               <option value="PATONG">Patong — 100 ฿</option>
               <option value="KAMALA">Kamala — 150 ฿</option>
             </select>
+            <p id="district-error" role="alert" hidden>Обязательно выберите район доставки.</p>
 
             <div id="delivery-address-field" style="margin-top:10px">
               <input class="input" id="addr-input" placeholder="Адрес доставки" autocomplete="street-address" />
@@ -416,10 +533,11 @@
         <circle cx="9" cy="20" r="1.6" fill="#111"></circle>
         <circle cx="18" cy="20" r="1.6" fill="#111"></circle>
       </svg>
+      <span id="mobile-cart-label">Корзина</span><span id="mobile-count" class="mobile-count">0</span>
     </button>
     <div class="mobile-range-wrap">
       <input class="mobile-range" id="mobile-range" type="range" min="0" max="5000" step="1" value="0" readonly />
-      <div class="mobile-labels"><b id="mobile-total">0</b></div>
+      <div class="mobile-labels"><span id="mobile-total-label">Итого</span><b><span id="mobile-total">0</span> ฿</b></div>
     </div>
   </div>
 
@@ -634,56 +752,56 @@
     /* ==== Categories ==== */
     const CATEGORIES = {
       "Супы": [
-        {name: "Борщ", img: "/images/borsht.jpeg", price: 180, desc: "Традиционный наваристый борщ. Подается со сметаной, салом и русской горчицей. 300 грамм"},
-        {name: "Солянка", img: "/images/Solyanka1.jpeg", price: 180, desc: "Сборная солянка с копченостями. Подается со сметаной и лимоном. 300 грамм"},
-        {name: "Гороховый суп", img: "/images/goroh soup1.jpeg", price: 180, desc: "Гороховый суп на копченых ребрах с сухариками. 300 грамм"},
-        {name: "Грибной суп", img: "/images/gribsoup.jpeg", price: 180, desc: "Грибной суп на основе куриного бульона с двуми видами грибов. 300 грамм"},
-        {name: "Окрошка", img: "/images/okroshka.jpeg", price: 180, desc: "Холодный суп с курицей и фирменной кисломолочной заправкой. 300 грамм"},
-        {name: "Куриный суп", img: "/images/kyrbyl.jpeg", price: 150, desc: "Куриный бульон с яичной лапшой и отварным яйцом. 350 грамм"},
+        {name: "Борщ", img: "/images/borsht.jpeg", price: 200, desc: "Традиционный наваристый борщ. Подается со сметаной, салом и русской горчицей. 300 грамм"},
+        {name: "Солянка", img: "/images/Solyanka1.jpeg", price: 200, desc: "Сборная солянка с копченостями. Подается со сметаной и лимоном. 300 грамм"},
+        {name: "Гороховый суп", img: "/images/goroh soup1.jpeg", price: 200, desc: "Гороховый суп на копченых ребрах с сухариками. 300 грамм"},
+        {name: "Грибной суп", img: "/images/gribsoup.jpeg", price: 200, desc: "Грибной суп на основе куриного бульона с двуми видами грибов. 300 грамм"},
+        {name: "Окрошка", img: "/images/okroshka.jpeg", price: 200, desc: "Холодный суп с курицей и фирменной кисломолочной заправкой. 300 грамм"},
+        {name: "Куриный суп", img: "/images/kyrbyl.jpeg", price: 170, desc: "Куриный бульон с яичной лапшой и отварным яйцом. 350 грамм"},
       ],
       "Основные блюда": [
-        { name: "Котлеты куриные", img: "/images/kyrinie kotlety1.jpeg", price: 150, desc: "Котлеты из мякоти бедра. Подаются с картофельным пюре. 300 грамм" },
-        { name: "Вареники с картошкой и беконом", img: "/images/vareniki1.jpeg", price: 170, desc: "Вареники ручной лепки с копченым беконом и нежным картофельным пюре. Подаются со сметаной и зеленью. 300 грамм" },
-        { name: "Пельмени", img: "/images/pelmeni.jpeg", price: 190, desc: "Пельмени ручной лепки с фаршем из свинины и говядины. Подаются со сметаной. 300 грамм" },
-        { name: "Котлеты из домашнего фарша", img: "/images/kotletyi iz farsha1.jpeg", price: 180, desc: "Сочные и ароматные котлеты, тушеные до насыщенного вкуса.Подаются с картофельным пюре. 350 грамм" },
-        { name: "Перец фаршированный", img: "/images/farshperci.jpeg", price: 200, desc: " Мини перцы с домашним фаршем, томленые с овощами. Подаеются со сметаной.400 грамм" },
-        { name: "Бефстроганов", img: "/images/befstroganof.jpeg", price: 220, desc: "Нежная говядина в сливочном соусе с грибами. Подается с картофельным пюре. 320 грамм" },
-        { name: "Лепешка с сыром", img: "/images/lepeshka s sirom1.jpeg", price: 100, desc: "Румяная дрожжевая лепешка с расплавленным сыром в мягком тесте, обжаренная до хрустящей корочки. 100 грамм" },
-        { name: "Лепешка с картошкой", img: "/images/lepeshka s sirom1.jpeg", price: 100, desc: "Румяная дрожжевая лепешка с начинкой из пышного картофельного пюре и ароматной зелени. Мягкая, сытная, с хрустящей корочкой. 100 грамм" },
-        { name: "Лепешка с рваной свининой", img: "/images/lepeshka s sirom1.jpeg", price: 150, desc: "Румяная дрожжевая лепешка с начинкой из рваной свинины приготовленной в смокере в течении 9 часов, сыра моцареллы, красного соуса, киндзы и вяленых томатов. 150 грамм" },
-        { name: "Котлета по-киевски", img: "/images/kotleta po kievski.jpeg", price: 230, desc: "Сочное куриное филе в хрустящей панировке со сливочным маслом и ароматной зеленью. Подается с картофельными дольками. 310 грамм" },
+        { name: "Котлеты куриные", img: "/images/kyrinie kotlety1.jpeg", price: 170, desc: "Котлеты из мякоти бедра. Подаются с картофельным пюре. 300 грамм" },
+        { name: "Вареники с картошкой и беконом", img: "/images/vareniki1.jpeg", price: 190, desc: "Вареники ручной лепки с копченым беконом и нежным картофельным пюре. Подаются со сметаной и зеленью. 300 грамм" },
+        { name: "Пельмени", img: "/images/pelmeni.jpeg", price: 210, desc: "Пельмени ручной лепки с фаршем из свинины и говядины. Подаются со сметаной. 300 грамм" },
+        { name: "Котлеты из домашнего фарша", img: "/images/kotletyi iz farsha1.jpeg", price: 200, desc: "Сочные и ароматные котлеты, тушеные до насыщенного вкуса.Подаются с картофельным пюре. 350 грамм" },
+        { name: "Перец фаршированный", img: "/images/farshperci.jpeg", price: 220, desc: " Мини перцы с домашним фаршем, томленые с овощами. Подаеются со сметаной.400 грамм" },
+        { name: "Бефстроганов", img: "/images/befstroganof.jpeg", price: 240, desc: "Нежная говядина в сливочном соусе с грибами. Подается с картофельным пюре. 320 грамм" },
+        { name: "Лепешка с сыром", img: "/images/lepeshka s sirom1.jpeg", price: 110, desc: "Румяная дрожжевая лепешка с расплавленным сыром в мягком тесте, обжаренная до хрустящей корочки. 100 грамм" },
+        { name: "Лепешка с картошкой", img: "/images/lepeshka s sirom1.jpeg", price: 110, desc: "Румяная дрожжевая лепешка с начинкой из пышного картофельного пюре и ароматной зелени. Мягкая, сытная, с хрустящей корочкой. 100 грамм" },
+        { name: "Лепешка с рваной свининой", img: "/images/lepeshka s sirom1.jpeg", price: 170, desc: "Румяная дрожжевая лепешка с начинкой из рваной свинины приготовленной в смокере в течении 9 часов, сыра моцареллы, красного соуса, киндзы и вяленых томатов. 150 грамм" },
+        { name: "Котлета по-киевски", img: "/images/kotleta po kievski.jpeg", price: 250, desc: "Сочное куриное филе в хрустящей панировке со сливочным маслом и ароматной зеленью. Подается с картофельными дольками. 310 грамм" },
         
-        { name: "Зраза", img: "/images/zraza.jpeg", price: 200, desc: "Картофельная зраза с мясной начинкой. Подается с соленым огурцом, маринованным луком и сметаной. 210 грамм" },
-        { name: "Драники", img: "/images/draniki.jpeg", price: 200, desc: "Подаются с малосоленым лососем, зеленью и сметаной. 200 грамм" },
-        { name: "Ленивые голубцы Том ям", img: "/images/golubtomyam.jpeg", price: 250, desc: "Ленивые голубцы из креветки и кальмара с пекинской капустой, дополненные пикантным соусом Том ям. Подаются с отварным рисом" },
-        { name: "Картошка фри", img: "/images/kart fri.jpeg", price: 120, desc: "Подается с кетчупом. 150 грамм" },
-        { name: "Картошка дольками", img: "/images/kart dolki.jpeg", price: 120, desc: "Подается с кетчупом. 150 грамм" },
-        { name: "Мини чебуреки", img: "/images/min chebureki.jpeg", price: 170, desc: "Хрустящие мини чебуреки с мясной начинкой. Подаются с аджикой. 180 грамм" },
+        { name: "Зраза", img: "/images/zraza.jpeg", price: 220, desc: "Картофельная зраза с мясной начинкой. Подается с соленым огурцом, маринованным луком и сметаной. 210 грамм" },
+        { name: "Драники", img: "/images/draniki.jpeg", price: 220, desc: "Подаются с малосоленым лососем, зеленью и сметаной. 200 грамм" },
+        { name: "Ленивые голубцы Том ям", img: "/images/golubtomyam.jpeg", price: 280, desc: "Ленивые голубцы из креветки и кальмара с пекинской капустой, дополненные пикантным соусом Том ям. Подаются с отварным рисом" },
+        { name: "Картошка фри", img: "/images/kart fri.jpeg", price: 130, desc: "Подается с кетчупом. 150 грамм" },
+        { name: "Картошка дольками", img: "/images/kart dolki.jpeg", price: 130, desc: "Подается с кетчупом. 150 грамм" },
+        { name: "Мини чебуреки", img: "/images/min chebureki.jpeg", price: 190, desc: "Хрустящие мини чебуреки с мясной начинкой. Подаются с аджикой. 180 грамм" },
       ],
       "Салаты": [
-        { name: "Салат Цезарь с копченой курицей", img: "/images/salat cezar.jpeg", price: 180, desc: "Свежие листья салата, черри, хрустящие сухарики и классический соус Цезарь.Основа блюда - фирменная копченая грудка и пармезан. 200 грамм" },
-        { name: "Овощной салат", img: "/images/Ovoshsalad.jpeg", price: 120, desc: "Помидоры черри, свежие огурцы, редис, зелень." },
-        { name: "Салат Обжорка", img: "/images/objorka.jpg", price: 180, desc: "Нежная отварная говядина, пассерованная морковь и лук, соленые огурцы, под майонезной заправкой. Классика дальнего востока. 230 грамм" },
-        { name: "Салат Крабовый", img: "/images/krabsalad.jpeg", price: 170, desc: "Снежный краб, огурцы, куриноей яйцо, кукуруза под майонезной заправкой" },
-        { name: "Салат баклажаны в кляре", img: "/images/salat baklajani.jpeg", price: 160, desc: "Обжаренные во фритюре ломтики баклажанов в хрустящей крахмальной корочке,с томатами черри, зеленью и пикатным соусом свит-чилли. 160 грамм" },
-        { name: "Салат Деревенский", img: "/images/derev.jpeg", price: 180, desc: "Копченый бекон обжаренный до хрустящей корочочки с молодым картофелем. Свежие огурцы, яйцо, томаты черри и хрустящие листья салата. 250 грамм" },
-        { name: "Салат Столичный", img: "/images/stolich.jpeg", price: 160, desc: "Копченая куриная грудка, отварное яйцо, отварной картофель, соленый огурец, консервированный горошек под майонезной заправкой. 230 грамм" },
+        { name: "Салат Цезарь с копченой курицей", img: "/images/salat cezar.jpeg", price: 200, desc: "Свежие листья салата, черри, хрустящие сухарики и классический соус Цезарь.Основа блюда - фирменная копченая грудка и пармезан. 200 грамм" },
+        { name: "Овощной салат", img: "/images/Ovoshsalad.jpeg", price: 130, desc: "Помидоры черри, свежие огурцы, редис, зелень." },
+        { name: "Салат Обжорка", img: "/images/objorka.jpg", price: 200, desc: "Нежная отварная говядина, пассерованная морковь и лук, соленые огурцы, под майонезной заправкой. Классика дальнего востока. 230 грамм" },
+        { name: "Салат Крабовый", img: "/images/krabsalad.jpeg", price: 190, desc: "Снежный краб, огурцы, куриноей яйцо, кукуруза под майонезной заправкой" },
+        { name: "Салат баклажаны в кляре", img: "/images/salat baklajani.jpeg", price: 180, desc: "Обжаренные во фритюре ломтики баклажанов в хрустящей крахмальной корочке,с томатами черри, зеленью и пикатным соусом свит-чилли. 160 грамм" },
+        { name: "Салат Деревенский", img: "/images/derev.jpeg", price: 200, desc: "Копченый бекон обжаренный до хрустящей корочочки с молодым картофелем. Свежие огурцы, яйцо, томаты черри и хрустящие листья салата. 250 грамм" },
+        { name: "Салат Столичный", img: "/images/stolich.jpeg", price: 180, desc: "Копченая куриная грудка, отварное яйцо, отварной картофель, соленый огурец, консервированный горошек под майонезной заправкой. 230 грамм" },
       ],
       "Гриль": [
-        { name: "Ребра BBQ", img: "/images/Rebra BBQ.jpeg", price: 350, desc: "Ребра барбекю, приготовленные методом low and slow, глазированные фирменным соусом.320 грамм" },
-        { name: "Кебаб свинина-говядина", img: "/images/kebab pork-beef1.jpeg", price: 250, desc: "Сочный кебаб, приправленный специями и приготовленный в смокере. Подается с маринованным луком, свежими овощами и аджикой. 250 грамм" },
-        { name: "Кебаб из курицы", img: "/images/kebab chicken1.jpeg", price: 200, desc: "Нежная курица с пряными специями. Сочное мясо с ярким вкусом, которое тает во рту. Подается с маринованным луком, свежими овощами и аджикой. 250 грамм" },
-        { name: "Шашлык из курицы", img: "/images/shashlik iz kyrica.jpeg", price: 200, desc: "Сочное мясо куриного бедра, маринованное в специях.Подается с маринованным луком, свежими овощами и аджикой. 200 грамм" },
-        { name: "Шашлык из курицы 2.0", img: "/images/kyr2.jpeg", price: 250, desc: "Шашлык из куриной грудки с печеными овощами, маринованным лучком и шашлычным соусом" },
-        { name: "Шашлык из куриного крыла", img: "/images/kyrkrilo.jpeg", price: 240, desc: "Шашлык из куриных крыльев с печеным картофелем, маринованным лучком и шашлычным соусом" },
-        { name: "Шашлык из свинины", img: "/images/shashlik iz svinini1.jpeg", price: 250, desc: "Сочный шашлык с дымком - нежные кусочки свинины, маринованные в авторском маринаде. Подается с маринованным луком, свежими овощами и аджикой.260 грамм" },
+        { name: "Ребра BBQ", img: "/images/Rebra BBQ.jpeg", price: 390, desc: "Ребра барбекю, приготовленные методом low and slow, глазированные фирменным соусом.320 грамм" },
+        { name: "Кебаб свинина-говядина", img: "/images/kebab pork-beef1.jpeg", price: 280, desc: "Сочный кебаб, приправленный специями и приготовленный в смокере. Подается с маринованным луком, свежими овощами и аджикой. 250 грамм" },
+        { name: "Кебаб из курицы", img: "/images/kebab chicken1.jpeg", price: 220, desc: "Нежная курица с пряными специями. Сочное мясо с ярким вкусом, которое тает во рту. Подается с маринованным луком, свежими овощами и аджикой. 250 грамм" },
+        { name: "Шашлык из курицы", img: "/images/shashlik iz kyrica.jpeg", price: 220, desc: "Сочное мясо куриного бедра, маринованное в специях.Подается с маринованным луком, свежими овощами и аджикой. 200 грамм" },
+        { name: "Шашлык из курицы 2.0", img: "/images/kyr2.jpeg", price: 280, desc: "Шашлык из куриной грудки с печеными овощами, маринованным лучком и шашлычным соусом" },
+        { name: "Шашлык из куриного крыла", img: "/images/kyrkrilo.jpeg", price: 260, desc: "Шашлык из куриных крыльев с печеным картофелем, маринованным лучком и шашлычным соусом" },
+        { name: "Шашлык из свинины", img: "/images/shashlik iz svinini1.jpeg", price: 280, desc: "Сочный шашлык с дымком - нежные кусочки свинины, маринованные в авторском маринаде. Подается с маринованным луком, свежими овощами и аджикой.260 грамм" },
       ],
       "Копчение": [
-        { name: "Ребро варено-копченое", img: "/images/rebrokop.jpeg", price: 300, desc: "Идеально к пиву. 300 грамм" },
+        { name: "Ребро варено-копченое", img: "/images/rebrokop.jpeg", price: 330, desc: "Идеально к пиву. 300 грамм" },
       ],
        "Cоленья": [
-        { name: "Квашенная капуста в собственному соку", img: "/images/kvash.jpeg", price: 400, desc: "1000 грамм" },
-       { name: "Квашенная капуста c клюквой в собственному соку", img: "/images/kvashbrus.jpeg", price: 400, desc: "1000 грамм" },
+        { name: "Квашенная капуста в собственном соку", img: "/images/kvash.jpeg", price: 400, desc: "1000 грамм" },
+       { name: "Квашенная капуста с клюквой в собственном соку", img: "/images/ksvahbrus.jpeg", price: 400, desc: "1000 грамм" },
          { name: "Капуста пелюстка", img: "/images/pelust.jpeg", price: 400, desc: "650 грамм" },
       ],
       "30 дней неодинаковой еды": [],
@@ -799,24 +917,21 @@
 
     /* SIZE VARIANTS */
     const SIZE_VARIANTS = {
-      "Лепешка с мясом":      { Standart: 100, XXL: 180 },
-      "Лепешка с сыром":      { Standart:  100, XXL: 200 },
-      "Лепешка с картошкой":  { Standart:  100, XXL: 200 },
-      "Лепешка с рваной свининой":  { Standart:  140, XXL: 250 },
+      "Лепешка с мясом":      { Standart: 110, XXL: 200 },
+      "Лепешка с сыром":      { Standart:  110, XXL: 220 },
+      "Лепешка с картошкой":  { Standart:  110, XXL: 220 },
+      "Лепешка с рваной свининой":  { Standart:  150, XXL: 280 },
     };
 
     function saveState(){
       try{
-        const districtSelect = document.getElementById('district-select');
-        if (districtSelect) localStorage.setItem(STORAGE.district, districtSelect.value||"");
         localStorage.setItem(STORAGE.lang, language);
       }catch(_){}
     }
     function loadState(){
-      const d = localStorage.getItem(STORAGE.district);
       const districtSelect = document.getElementById('district-select');
-      if(d && districtSelect && Array.from(districtSelect.options).some(o=>o.value===d)) districtSelect.value=d;
-      const l = localStorage.getItem(STORAGE.lang); if(l) language=l;
+      if(districtSelect)districtSelect.value='';
+      try{const l=localStorage.getItem(STORAGE.lang);if(l==='ru'||l==='en')language=l;}catch(_){}
     }
 
     /* ==== DOM refs ==== */
@@ -844,6 +959,8 @@
     const checkoutBtn=document.getElementById('checkout-btn');
     const districtLabel=document.getElementById('district-label');
     const districtSelect=document.getElementById('district-select');
+    const districtError=document.getElementById('district-error');
+    let districtTouched=false;
     const deliveryOptions=document.getElementById('delivery-options');
     const fulfillmentDelivery=document.getElementById('fulfillment-delivery');
     const fulfillmentPickup=document.getElementById('fulfillment-pickup');
@@ -943,20 +1060,29 @@
       const target = new Date(`${todayISO()}T${orderState.hour}:${orderState.minute}:00+07:00`).getTime();
       return Number.isFinite(target) && target >= Date.now() + 60*60*1000;
     }
+    const DELIVERY_FEES={CENTRAL_KATHU:50,BASE_UP_TOWN:0,KATA_KARON:150,RAWAI:150,BANG_TAO:200,SURIN:200,CHALONG:100,PATONG:100,KAMALA:150};
+    const validDistrict=()=>Object.prototype.hasOwnProperty.call(DELIVERY_FEES,districtSelect.value);
+    function syncDistrictValidation(){
+      const invalid=fulfillmentType==='DELIVERY'&&!validDistrict()&&(districtTouched||Object.keys(cart).length>0);
+      districtSelect.classList.toggle('district-invalid',invalid);
+      districtSelect.setAttribute('aria-invalid',String(invalid));
+      districtSelect.required=fulfillmentType==='DELIVERY';
+      districtError.hidden=!invalid;
+      districtError.textContent=language==='ru'?'Обязательно выберите район доставки':'Please select a delivery area';
+    }
     const canCheckout = ()=>{
       const hasItems = Object.keys(cart).length>0;
       const contactOk = Boolean((customer.name || '').trim()) && validPhone(customer.phone);
       const fulfillmentOk = fulfillmentType === 'PICKUP'
         ? contactOk
-        : (contactOk && Boolean((customer.address || '').trim()));
+        : (contactOk && Boolean((customer.address || '').trim()) && validDistrict());
       return accountState.ready && hasItems && fulfillmentOk && scheduledAtLeastOneHourAway();
     };
     const itemsTotal = ()=> Object.values(cart).reduce((s,i)=> s + i.qty*i.price, 0);
 
     function updateDeliveryFee(){
-      const feeMap={CENTRAL_KATHU:50,BASE_UP_TOWN:0,KATA_KARON:150,RAWAI:150,BANG_TAO:200,SURIN:200,CHALONG:100,PATONG:100,KAMALA:150};
-      deliveryFee = fulfillmentType === 'PICKUP' ? 0 : (feeMap[districtSelect.value] ?? 0);
-      deliveryFeeEl.textContent = deliveryFee;
+      deliveryFee = fulfillmentType === 'PICKUP' ? 0 : (validDistrict()?DELIVERY_FEES[districtSelect.value]:0);
+      deliveryFeeEl.textContent = fulfillmentType==='DELIVERY'&&!validDistrict()?'—':deliveryFee;
     }
 
     function getBonusBalance(){
@@ -1018,14 +1144,15 @@
         `Доступно: ${balance.toLocaleString('ru-RU')} ฿. ` +
         `Максимум к списанию: ${maxBonus.toLocaleString('ru-RU')} ฿.`;
 
-      deliveryFeeEl.textContent = effectiveDelivery;
+      deliveryFeeEl.textContent = fulfillmentType==='DELIVERY'&&!validDistrict()?'—':effectiveDelivery;
       const grand = Math.max(0, baseItems - bonusApplied + effectiveDelivery);
       grandTotalEl.textContent = grand;
 
       const progress = Math.min(5000, baseItems);
       mobileRange.value = progress;
       mobileRange.style.setProperty('--_p', (progress / 5000) * 100 + '%');
-      mobileTotal.textContent = baseItems;
+      mobileTotal.textContent = baseItems>0?grand:0;
+      document.getElementById('mobile-count').textContent=Object.values(cart).reduce((n,item)=>n+Number(item.qty||0),0);
 
       syncCheckoutBtn();
     }
@@ -1046,13 +1173,31 @@
         addrSummary.style.display='none';
       }
     }
-    function syncCheckoutBtn(){ checkoutBtn.disabled=!canCheckout(); }
+    function syncCheckoutBtn(){ syncDistrictValidation(); checkoutBtn.disabled=!canCheckout(); }
+
+    function syncRoundAccountControl(ready=accountState.ready){
+      const label=ready?(language==='ru'?'Личный кабинет':'My account'):(language==='ru'?'Войти через Telegram':'Sign in with Telegram');
+      accountOpen.title=label;accountOpen.setAttribute('aria-label',label);accountOpen.classList.toggle('login-mode',!ready);
+    }
 
     function setLanguage(next){
       language = next;
       const t = translations[language];
       heroText.textContent = t.delivery;
-      welcomeText.textContent = t.welcome;
+      document.documentElement.lang=language;
+      document.getElementById('hero-heading').innerHTML=language==='ru'?'Русская кухня.<br>Американский смокер.':'Russian cuisine.<br>American smoker.';
+      document.getElementById('hero-intro').textContent=language==='ru'?'Любимые домашние блюда и мясо из американского смокера. Закажите доставку или самовывоз.':'Homestyle classics and meat from our American smoker. Order delivery or pickup.';
+      document.getElementById('hero-hours').textContent=language==='ru'?'10:00–22:00 · ПН–СБ':'10:00–22:00 · MON–SAT';
+      document.getElementById('hero-menu').textContent=language==='ru'?'Смотреть меню':'Explore menu';
+      document.getElementById('hero-subscription-label').textContent=language==='ru'?'Обеды по подписке':'Meal subscriptions';
+      document.getElementById('menu-heading').textContent=language==='ru'?'Меню':'Menu';
+      document.getElementById('menu-subheading').textContent=language==='ru'?'Выберите любимые блюда':'Choose your favourites';
+      document.getElementById('menu-search').placeholder=language==='ru'?'Поиск блюда':'Find a dish';
+      document.getElementById('menu-search').setAttribute('aria-label',language==='ru'?'Поиск блюда':'Find a dish');
+      document.getElementById('mobile-cart-label').textContent=language==='ru'?'Корзина':'My order';
+      document.getElementById('mobile-total-label').textContent=language==='ru'?'Итого':'Total';
+      document.getElementById('loyalty-register-note').textContent=language==='ru'?'Войдите в личный кабинет, чтобы получать бонусные баты за покупки.':'Sign in to earn bonus baht on your purchases.';
+      welcomeText.textContent=language==='ru'?'Русская кухня, барбекю, доставка и самовывоз на Пхукете.':'Russian cuisine, barbecue, delivery and pickup in Phuket.';
       myOrderLabel.textContent = t.myOrder;
       deliveryPill.textContent = fulfillmentType === 'PICKUP' ? '🥡 Самовывоз' : '📦 ' + t.deliveryPill;
       deliveryCostRow.firstChild.textContent = t.deliveryCost + ': ';
@@ -1084,14 +1229,9 @@
       commentLabel.textContent = t.comment;
       commentInput.placeholder = t.commentPh;
 
-      langToggle.textContent = language==="ru" ? "🇺🇸 EN" : "🇷🇺 RU";
-      if(accountState.ready){
-        accountOpen.textContent = language === 'ru' ? '👤 Личный кабинет' : '👤 Account';
-        accountOpen.classList.remove('login-mode');
-      }else{
-        accountOpen.textContent = language === 'ru' ? '✈ Войти через Telegram' : '✈ Sign in with Telegram';
-        accountOpen.classList.add('login-mode');
-      }
+      document.getElementById('language-control-label').textContent=language.toUpperCase();
+      const switchLabel=language==='ru'?'Переключить на English':'Switch to Russian';langToggle.title=switchLabel;langToggle.setAttribute('aria-label',switchLabel);
+      syncRoundAccountControl();
 
       renderCats(); renderMenu(); renderCartItems(); renderAddrSummary(); updateTotals();
       saveState();
@@ -1159,8 +1299,7 @@
       accountState.loyalty = data.loyalty || {totalSpend:0,cashbackPercent:0,balance:0,maxRedeemPercent:20,ordersCount:0};
       accountState.orders = data.orders || [];
 
-      accountOpen.textContent = language === 'ru' ? '👤 Личный кабинет' : '👤 Account';
-      accountOpen.classList.remove('login-mode');
+      syncRoundAccountControl(true);
 
       const p = accountState.profile;
       const telegramFullName = [p.telegramFirstName, p.telegramLastName].filter(Boolean).join(' ').trim();
@@ -1288,8 +1427,7 @@
         applyAccountData(data);
       }catch(error){
         console.warn('Account bootstrap:',error.message);
-        accountOpen.textContent = language === 'ru' ? '✈ Войти через Telegram' : '✈ Sign in with Telegram';
-        accountOpen.classList.add('login-mode');
+        syncRoundAccountControl(false);
         accountMessage.textContent='Войдите через Telegram, чтобы оформить заказ, открыть бонусы и историю заказов.';
         await renderTelegramLogin();
       }
@@ -1419,7 +1557,8 @@
       "Салаты": "/images/salat cezar.jpeg",
       "Гриль": "/images/kebab pork-beef1.jpeg",
       "Копчение": "/images/rebrokop.jpeg",
-      "30 дней неодинаковой еды": "/images/meal-of-the-day-promo.png",
+      "Cоленья": "/images/kvash.jpeg",
+      "30 дней неодинаковой еды": "/images/mealpoint-logo.png",
     };
 
     function renderCats(){
@@ -1427,20 +1566,22 @@
       Object.keys(CATEGORIES).forEach(cat=>{
         const btn=document.createElement('button');
         btn.className='cat-btn';
+        if(cat==='30 дней неодинаковой еды')btn.classList.add('cat-mealpoint');
         btn.setAttribute('type','button');
-        btn.setAttribute('aria-label', translations[language].categories[cat] || cat);
+        const categoryLabel=cat==='30 дней неодинаковой еды'?'MealPoint':cat==='Cоленья'&&language==='en'?'Pickles':(translations[language].categories[cat] || cat);
+        btn.setAttribute('aria-label',categoryLabel);
 
         const img=document.createElement('img');
         img.className='cat-img';
-        img.alt=translations[language].categories[cat] || cat;
+        img.alt='';
         img.src = CAT_IMAGES[cat] || '/images/logo.jpg';
 
         const name=document.createElement('span');
         name.className='cat-name';
-        name.textContent = translations[language].categories[cat] || cat;
+        name.textContent = categoryLabel;
 
         btn.append(img, name);
-        btn.onclick=()=> document.getElementById('cat-'+slug(cat))?.scrollIntoView({behavior:'smooth',block:'start'});
+        btn.onclick=()=>{document.getElementById('menu-search').value='';applyMenuFilter();catStrip.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b===btn));document.getElementById('cat-'+slug(cat))?.scrollIntoView({behavior:'smooth',block:'start'});};
         catStrip.appendChild(btn);
       });
     }
@@ -1486,70 +1627,37 @@
       return { row, setActive };
     }
 
+    function applyMenuFilter(){
+      const query=document.getElementById('menu-search').value.trim().toLocaleLowerCase();
+      let visible=0;
+      menuRoot.querySelectorAll('.menu-section').forEach(section=>{
+        const cards=[...section.querySelectorAll('.menu-card')];
+        if(!cards.length){section.hidden=Boolean(query);return;}
+        let count=0;
+        for(const card of cards){card.hidden=Boolean(query)&&!card.dataset.search.includes(query);if(!card.hidden)count++;}
+        section.hidden=count===0;visible+=count;
+      });
+      const empty=document.getElementById('menu-search-empty');empty.hidden=!query||visible>0;
+      empty.textContent=language==='ru'?'Ничего не найдено. Попробуйте другое название.':'No dishes found. Try a different search.';
+    }
+
     function renderMenu(){
       menuRoot.innerHTML='';
       Object.entries(CATEGORIES).forEach(([cat, items])=>{
         const wrap=document.createElement('div');
+        wrap.className='menu-section';wrap.dataset.category=cat;
         const title=document.createElement('div');
         title.className='cat-title';
         title.id='cat-'+slug(cat);
-        title.textContent = translations[language].categories[cat] || cat;
+          title.textContent = translations[language].categories[cat] || (cat==='Cоленья'&&language==='en'?'Pickles':cat);
         wrap.appendChild(title);
 
         if(cat === '30 дней неодинаковой еды'){
           const promo=document.createElement('div');
           promo.className='subscription-promo';
           promo.innerHTML = language === 'ru' ? `
-            <div class="subscription-promo-grid">
-              <div class="subscription-promo-panel subscription-promo-copy">
-                <h3>30 дней еды без хлопот</h3>
-                <p>Готовим каждый день из свежих продуктов и экономим ваше время и бюджет. На каждый выбранный день — разные сытные обеды: без закупок, готовки и одинаковой еды всю неделю.</p>
-                <div class="subscription-facts">
-                  <div class="subscription-fact"><b>от 250 ฿</b><span>за обед</span></div>
-                  <div class="subscription-fact"><b>60+</b><span>блюд</span></div>
-                  <div class="subscription-fact"><b>7 / 14 / 30</b><span>дней</span></div>
-                </div>
-                <p><b>30 дней — 7 500 ฿.</b> Подписка оформляется только после входа в личный кабинет. Можно выбрать доставку Grab или самовывоз и менять время каждого дня.</p>
-                <a class="subscription-promo-cta" href="https://meal-point.com" target="_blank" rel="noopener">Выбрать дни и блюда</a>
-              </div>
-              <div class="subscription-promo-panel subscription-promo-image-panel">
-                <img class="subscription-promo-img" src="/images/meal-of-the-day-promo1.png" alt="30 дней еды без хлопот">
-              </div>
-              <div class="subscription-promo-panel subscription-showcase-panel">
-                <div class="subscription-showcase" aria-label="Как выглядит подписка MealPoint">
-                  <div class="subscription-box-stack">
-                    <img src="/subscription-showcase/box-open.jpg" alt="Открытая коробка с первым, вторым блюдом и компотом">
-                    <img src="/subscription-showcase/box-closed.jpg" alt="Фирменная коробка 30 дней неодинаковой еды">
-                  </div>
-                  <img class="subscription-showcase-fridge" src="/subscription-showcase/fridge.jpg" alt="Фирменный холодильник Smoke Factory BBQ с коробками MealPoint">
-                </div>
-              </div>
-            </div>` : `
-            <div class="subscription-promo-grid">
-              <div class="subscription-promo-panel subscription-promo-copy">
-                <h3>30 days of different meals</h3>
-                <p>Freshly cooked every day. Different filling meals for each selected day — no shopping, cooking, or eating the same food all week.</p>
-                <div class="subscription-facts">
-                  <div class="subscription-fact"><b>from 250 ฿</b><span>per meal</span></div>
-                  <div class="subscription-fact"><b>60+</b><span>dishes</span></div>
-                  <div class="subscription-fact"><b>7 / 14 / 30</b><span>days</span></div>
-                </div>
-                <p><b>30 days — 7,500 ฿.</b> Sign in to your account to subscribe. Choose Grab delivery or pickup and change the time for each day.</p>
-                <a class="subscription-promo-cta" href="https://meal-point.com" target="_blank" rel="noopener">Choose days and meals</a>
-              </div>
-              <div class="subscription-promo-panel subscription-promo-image-panel">
-                <img class="subscription-promo-img" src="/images/meal-of-the-day-promo.png" alt="30 days of meals">
-              </div>
-              <div class="subscription-promo-panel subscription-showcase-panel">
-                <div class="subscription-showcase" aria-label="MealPoint subscription presentation">
-                  <div class="subscription-box-stack">
-                    <img src="/subscription-showcase/box-open.jpg" alt="Open meal box with soup, main course and compote">
-                    <img src="/subscription-showcase/box-closed.jpg" alt="Branded 30 days of different meals box">
-                  </div>
-                  <img class="subscription-showcase-fridge" src="/subscription-showcase/fridge.jpg" alt="Smoke Factory BBQ branded refrigerator with MealPoint boxes">
-                </div>
-              </div>
-            </div>`;
+            <div class="subscription-promo-panel subscription-promo-copy"><span class="eyebrow">MealPoint · Phuket</span><h3>Обеды по подписке</h3><p>Выберите удобные дни и блюда в календаре MealPoint. Подробности, актуальные условия и оформление — на отдельном сайте.</p><a class="subscription-promo-cta" href="https://meal-point.com" target="_blank" rel="noopener">Перейти в MealPoint</a></div>` : `
+            <div class="subscription-promo-panel subscription-promo-copy"><span class="eyebrow">MealPoint · Phuket</span><h3>Meal subscriptions</h3><p>Choose the days and meals you need in the MealPoint calendar. Current options and subscription details are available on the separate website.</p><a class="subscription-promo-cta" href="https://meal-point.com" target="_blank" rel="noopener">Explore MealPoint</a></div>`;
           wrap.appendChild(promo);
           menuRoot.appendChild(wrap);
           return;
@@ -1558,14 +1666,18 @@
         const grid=document.createElement('div'); grid.className='menu-grid';
         items.forEach(item=>{
           const card=document.createElement('div'); card.className='menu-card';
-          const img=document.createElement('img'); img.src=item.img||'/placeholder.svg'; img.alt=getDishName(item.name);
+          card.dataset.search=[item.name,getDishName(item.name),item.desc||'',getDishDesc(item.name,item.desc||'')].join(' ').toLocaleLowerCase();
+          const img=document.createElement('img'); img.src=item.img||'/images/logo.jpg'; img.alt=getDishName(item.name);img.loading='lazy';img.decoding='async';img.width=400;img.height=312;
           const body=document.createElement('div'); body.className='card-body';
           const nm=document.createElement('div'); nm.className='card-title'; nm.textContent=getDishName(item.name);
           const ds=document.createElement('div'); ds.className='card-desc'; ds.textContent=getDishDesc(item.name, item.desc||'');
+          const details=document.createElement('button');details.type='button';details.className='card-desc-toggle';details.textContent=language==='ru'?'Подробнее':'Details';details.setAttribute('aria-expanded','false');
+          if(ds.textContent.length<80)details.hidden=true;
+          details.onclick=()=>{const expanded=ds.classList.toggle('expanded');details.setAttribute('aria-expanded',String(expanded));details.textContent=expanded?(language==='ru'?'Свернуть':'Less'):(language==='ru'?'Подробнее':'Details');};
           const foot=document.createElement('div'); foot.className='card-footer';
           const pr=document.createElement('div'); pr.className='card-price';
 
-          const add=document.createElement('button'); add.className='add-btn'; add.textContent=translations[language].addToCart;
+          const add=document.createElement('button'); add.className='add-btn';add.type='button';add.textContent=language==='ru'?'+ В корзину':'+ Add';add.setAttribute('aria-label',translations[language].addToCart+': '+getDishName(item.name));
 
           if (SIZE_VARIANTS[item.name]) {
             let currentSize = 'Standart';
@@ -1580,7 +1692,7 @@
             setActive('Standart');
 
             foot.append(pr, add);
-            body.append(nm, ds, row, foot);
+            body.append(nm, ds, details, row, foot);
             card.append(img, body);
             grid.appendChild(card);
 
@@ -1601,21 +1713,23 @@
               e.qty+=1; e.price=item.price; e.img=item.img;
               cart[item.name]=e; renderCartItems(); updateTotals();
             };
-            foot.append(pr, add); body.append(nm, ds, foot);
+            foot.append(pr, add); body.append(nm, ds, details, foot);
             card.append(img, body); grid.appendChild(card);
           }
         });
         wrap.appendChild(grid);
         menuRoot.appendChild(wrap);
       });
+      applyMenuFilter();
     }
 
     function renderCartItems(){
       const root=document.getElementById('cart-items');
       root.innerHTML='';
+      if(!Object.keys(cart).length){const empty=document.createElement('div');empty.className='cart-empty';const title=document.createElement('strong');title.textContent=language==='ru'?'Корзина пока пуста':'Your basket is empty';const note=document.createElement('span');note.textContent=language==='ru'?'Выберите любимые блюда из меню.':'Add your favourite dishes from the menu.';empty.append(title,note);root.append(empty);}
       Object.entries(cart).forEach(([name,item])=>{
         const row=document.createElement('div'); row.className='cart-item';
-        const img=document.createElement('img'); img.src=item.img||'/placeholder.svg'; img.alt=name; Object.assign(img.style,{width:'48px',height:'48px',objectFit:'cover',borderRadius:'8px'});
+        const img=document.createElement('img'); img.src=item.img||'/images/logo.jpg'; img.alt=name; Object.assign(img.style,{width:'48px',height:'48px',objectFit:'cover',borderRadius:'8px'});
         const mid=document.createElement('div');
         const top=document.createElement('div'); Object.assign(top.style,{display:'flex',justifyContent:'space-between',gap:'8px',alignItems:'center'});
         const strong=document.createElement('strong'); strong.textContent=getDishName(name);
@@ -2054,6 +2168,7 @@
     }
 
     function submitOrder() {
+      if(fulfillmentType==='DELIVERY'&&!validDistrict()){districtTouched=true;syncDistrictValidation();districtSelect.focus();return;}
       if(!accountState.ready){ openAccountModal(); bootstrapAccount(); return; }
       syncInlineCustomer();
       if(!canCheckout()){
@@ -2107,7 +2222,8 @@
 
     /* ==== Events & Init ==== */
     const jumpCart=document.getElementById('jump-cart');
-    districtSelect.addEventListener('change', ()=>{ updateTotals(); saveState(); });
+    districtSelect.addEventListener('change', ()=>{districtTouched=true;updateTotals();syncDistrictValidation();});
+    districtSelect.addEventListener('blur',()=>{districtTouched=true;syncDistrictValidation();});
     fulfillmentDelivery.addEventListener('click',()=>setFulfillment('DELIVERY'));
     fulfillmentPickup.addEventListener('click',()=>setFulfillment('PICKUP'));
     document.querySelectorAll('input[name="payment"]').forEach(r=>r.addEventListener('change',syncCheckoutBtn));
@@ -2122,6 +2238,8 @@
       updateTotals();
     });
     jumpCart.onclick = ()=> document.getElementById('cart')?.scrollIntoView({behavior:'smooth'});
+    document.getElementById('menu-search').addEventListener('input',applyMenuFilter);
+    document.getElementById('hero-menu').addEventListener('click',()=>{document.getElementById('menu-search').value='';applyMenuFilter();document.getElementById('cat-'+slug(Object.keys(CATEGORIES)[0]))?.scrollIntoView({behavior:'smooth',block:'start'});});
     document.getElementById('checkout-btn').onclick = submitOrder;
     langToggle.onclick = ()=> { setLanguage(language==='ru'?'en':'ru'); saveState(); };
     window.addEventListener('beforeunload', saveState);
