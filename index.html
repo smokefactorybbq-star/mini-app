@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Smoke Factory BBQ — Меню</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
   <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
   <style>
@@ -379,6 +379,15 @@
     #district-select.district-invalid{border:2px solid #b91c1c!important;box-shadow:0 0 0 2px #b91c1c19}#district-error{margin:6px 0 0;color:#b91c1c;font-size:13px;line-height:1.4;font-weight:700}#district-error[hidden]{display:none!important}
     @media(max-width:768px){.header-brand-logo{width:63px;height:45px}.header-actions{gap:6px}.hero-secondary.mealpoint-quick{padding:6px 11px;min-height:42px;gap:6px}.mealpoint-quick img{width:70px;height:25px}.mealpoint-quick span{font-size:11px}.cat-mealpoint .cat-img{width:76px;height:30px;flex-basis:76px}.brand-wordmark b{white-space:nowrap}}
     @media(max-width:400px){.brand-emblem{display:none}.header-brand-logo{width:54px;height:40px}.header-inner{padding-inline:10px}.header-actions{gap:5px}.brand-wordmark b{font-size:15px}.round-control,.account-trigger.round-control,.lang-toggle.round-control{width:40px;height:40px;min-width:40px;flex-basis:40px}}
+    /* Full-size dish photography, without changing the catalogue layout. */
+    .menu-card>img[role="button"]{cursor:zoom-in;touch-action:manipulation}
+    .menu-card>img[role="button"]:focus-visible{outline:3px solid #953e37;outline-offset:-4px}
+    .dish-photo-dialog{max-width:min(960px,calc(100vw - 32px));max-height:calc(100dvh - 32px);width:max-content;margin:auto;padding:0;border:0;border-radius:22px;background:#fff;color:#24211e;box-shadow:0 24px 80px #0006;overflow:auto}
+    .dish-photo-dialog::backdrop{background:rgba(20,17,15,.82)}
+    .dish-photo-frame{position:relative;display:grid;justify-items:center}
+    .dish-photo-frame img{display:block;width:min(88vw,860px);height:min(70dvh,700px);max-width:100%;max-height:calc(100dvh - 130px);object-fit:contain;background:#f6f4ef}
+    .dish-photo-caption{font-size:clamp(16px,2vw,22px);font-weight:750;text-align:center;margin:0;padding:16px 20px;max-width:100%;overflow-wrap:anywhere}
+    .dish-photo-close{position:absolute;top:12px;right:12px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:#24211e;color:white;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 2px 12px #0004}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
@@ -683,6 +692,14 @@
     </div>
   </div>
 
+  <dialog class="dish-photo-dialog" id="dish-photo-dialog" aria-labelledby="dish-photo-caption">
+    <div class="dish-photo-frame">
+      <button type="button" class="dish-photo-close" id="dish-photo-close" aria-label="Закрыть" autofocus>×</button>
+      <img id="dish-photo-image" alt="" />
+      <p class="dish-photo-caption" id="dish-photo-caption"></p>
+    </div>
+  </dialog>
+
   <script>
     // Безопасная инициализация Telegram WebApp
     try {
@@ -754,6 +771,34 @@
       document.body.style.overflow = '';
       requestAnimationFrame(() => window.scrollTo(0, restoreY));
     }
+
+    /* ==== Dish photograph viewer ==== */
+    const dishPhotoDialog=document.getElementById('dish-photo-dialog');
+    const dishPhotoImage=document.getElementById('dish-photo-image');
+    const dishPhotoCaption=document.getElementById('dish-photo-caption');
+    const dishPhotoClose=document.getElementById('dish-photo-close');
+    let dishPhotoTrigger=null;
+    function openDishPhoto(item,trigger){
+      if(dishPhotoDialog.open)return;
+      const title=getDishName(item.name);
+      dishPhotoTrigger=trigger;
+      dishPhotoImage.src=item.img||'/images/logo.jpg';
+      dishPhotoImage.alt=title;
+      dishPhotoCaption.textContent=title;
+      dishPhotoClose.setAttribute('aria-label',language==='ru'?'Закрыть фото':'Close photo');
+      dishPhotoDialog.showModal();
+      lockBodyScroll();
+    }
+    dishPhotoClose.addEventListener('click',()=>dishPhotoDialog.close());
+    dishPhotoDialog.addEventListener('click',e=>{
+      if(e.target===dishPhotoDialog)dishPhotoDialog.close();
+    });
+    dishPhotoDialog.addEventListener('close',()=>{
+      unlockBodyScroll();
+      dishPhotoImage.removeAttribute('src');
+      dishPhotoTrigger?.focus({preventScroll:true});
+      dishPhotoTrigger=null;
+    });
 
     /* ==== Categories ==== */
     const CATEGORIES = {
@@ -1685,6 +1730,11 @@
           const card=document.createElement('div'); card.className='menu-card';
           card.dataset.search=[item.name,getDishName(item.name),item.desc||'',getDishDesc(item.name,item.desc||'')].join(' ').toLocaleLowerCase();
           const img=document.createElement('img'); img.src=item.img||'/images/logo.jpg'; img.alt=getDishName(item.name);img.loading='lazy';img.decoding='async';img.width=400;img.height=312;
+          img.setAttribute('role','button');img.tabIndex=0;
+          img.setAttribute('aria-label',(language==='ru'?'Увеличить фото: ':'Enlarge photo: ')+getDishName(item.name));
+          img.setAttribute('aria-haspopup','dialog');
+          img.addEventListener('click',()=>openDishPhoto(item,img));
+          img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDishPhoto(item,img);}});
           if(cat === 'Cоленья'){ img.classList.add('pickles-img'); }
           const body=document.createElement('div'); body.className='card-body';
           const nm=document.createElement('div'); nm.className='card-title'; nm.textContent=getDishName(item.name);
